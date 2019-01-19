@@ -8,7 +8,7 @@
 #include <xc.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/attribs.h>
+#include "wifi.h"
 
 // DEVCFG0
 #pragma config CP = OFF
@@ -30,24 +30,15 @@
 #pragma config IOL1WAY = 0
 #pragma config PMDL1WAY = 0
 
-
+void wifi_recieve(unsigned char *data){
+    
+}
 
 /*
  * 
  */
 int main(int argc, char** argv) {
-    U1RXR = 0x0011; // Set UART1 RX to Port B13
-    RPB15R = 0b0001; // Set UART1 TX to Port B15
-
-
-
-    U1MODE = 0b1000100010000000;
-    U1STA = 0x1400;
-    U1BRG = 0x0019;
-    U1MODESET = 0x8000;
-    
+    wifi_init();
 
     return (EXIT_SUCCESS);
 }
-
-void __ISR()
