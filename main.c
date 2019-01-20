@@ -30,8 +30,31 @@
 #pragma config IOL1WAY = 0
 #pragma config PMDL1WAY = 0
 
-void wifi_recieve(unsigned char *data){
-    
+int startsWith(unchar *str, uint strLen, unchar *start, uint startLen) {
+    if (strLen < startLen)return 0;
+    uint i;
+    for (i = 0; i < startLen; i++) {
+        if (str[i] != start[i]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void wifi_receive(unchar *data, uint len) {
+    if (startsWith(data, len, "+IPD", 4)) {
+        unchar echo[10];
+        len = min(16, len);
+        uint i;
+        for (i = 6; i < len; i++) {
+            echo[i - 6] = data[i];
+        }
+        wifi_send(echo, len - 6);
+    }
+}
+
+void tcp_receive(unchar *data, uint len) {
+
 }
 
 /*
@@ -39,6 +62,10 @@ void wifi_recieve(unsigned char *data){
  */
 int main(int argc, char** argv) {
     wifi_init();
-
+    wifi_setSoftAP("Small Device", 12,"pic32mx170f256b", 15);
+    wifi_startTCPServer("8888", 4);
+    while (1) {
+        _wait();
+    }
     return (EXIT_SUCCESS);
 }

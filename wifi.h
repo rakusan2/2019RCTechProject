@@ -18,6 +18,9 @@
 #include <sys/attribs.h>
 
 
+typedef unsigned char unchar;
+typedef unsigned int uint;
+
 /* ************************************************************************** */
 /* ************************************************************************** */
 /* Section: Included Files                                                    */
@@ -30,4 +33,6 @@
 /* TODO:  Include other files here if needed. */
 
 void wifi_init();
-void wifi_send(unsigned char *data, int len);
+void wifi_send(unchar *data, int len);
+void wifi_startTCPServer(unchar *port, uint len);
+void wifi_setSoftAP(unchar *ssid, uint ssidLen, unchar *pwd, uint pwdLen);

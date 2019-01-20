@@ -16,19 +16,89 @@
 
 #include <xc.h>
 #include <sys/attribs.h>
+#include <stdlib.h>
 
+typedef unsigned char unchar;
+typedef unsigned int uint;
 #define UART1_PRIORITY 6
+#define TXBufSize 2000
+#define RXBufSize 2000
+
+unchar txBuf[TXBufSize];
+unchar rxBuf[RXBufSize];
+uint txBufLen = 0;
+uint rxBufLen = 0;
+uint txPointer = 0;
+uint rxPointer = 0;
+
 
 // Located In Main
-void wifi_recieve(unsigned char *data);
+void wifi_receive(unsigned char *data, unsigned int len);
 
-__ISR(_UART_1_VECTOR,IPL7SOFT) UARTInt(){
-    unsigned char data[] = {5, 6,7,8};
-    wifi_recieve(data);
+void __sendNext() {
+    if (!U1STAbits.UTXBF && txPointer < txBufLen) {
+        U1TXREG = txBuf[txPointer];
+        txPointer++;
+        if (txPointer == txBufLen) {
+            txPointer = txBufLen = 0;
+        }
+        __sendNext();
+    }
 }
 
-void wifi_init(){
-    
+void txBufAdd(unchar *data, uint len) {
+    uint i;
+    for (i = 0; i < len; i++) {
+        txBuf[txBufLen + i] = data[i];
+    }
+    txBufLen += len;
+}
+
+void txBufAddStr(unchar *data, uint len){
+    txBufAdd("\"",1);
+    txBufAdd(data,len);
+    txBufAdd("\"",1);
+}
+
+inline void txBufAddLn(unchar *data, uint len) {
+    txBufAdd(data, len);
+    txBufAdd("\r\n", 2);
+}
+
+void send(unchar *comand, uint cLen, unchar *data, uint dLen) {
+    txBufAdd(comand, cLen);
+    txBufAdd(data, dLen);
+    __sendNext();
+}
+
+__ISR(_UART_1_VECTOR, IPL6SOFT) UARTInt() {
+    if (IFS1bits.U1RXIF) {
+        while (U1STAbits.URXDA) {
+            rxBuf[rxPointer] = U1RXREG;
+            if (rxBuf[rxPointer] == '\n') {
+                wifi_receive(rxBuf, rxPointer + 1);
+                rxPointer = 0;
+            } else {
+                rxPointer++;
+            }
+        }
+        IFS1bits.U1RXIF = 0;
+    }
+    if (IFS1bits.U1TXIF) {
+        __sendNext();
+        IFS1bits.U1TXIF = 0;
+    }
+}
+
+void wifi_init() {
+    int i;
+    for (i = 0; i < TXBufSize; i++) {
+        txBuf[i] = 0;
+    }
+    for (i = 0; i < RXBufSize; i++) {
+        rxBuf[i] = 0;
+    }
+
     U1RXR = 0x0011; // Set UART1 RX to Port B13
     RPB15R = 0b0001; // Set UART1 TX to Port B15
 
@@ -36,11 +106,43 @@ void wifi_init(){
     U1STA = 0x1400;
     U1BRG = 0x0019;
     U1MODESET = 0x8000;
-    
-    IEC1 |= 1 << 8; // Enable Interrupt
-    IPC8 |= (UART1_PRIORITY << 2);  // Set Priority Level
+
+    IEC1bits.U1RXIE = 1; // Enable Receive Interrupt
+    IEC1bits.U1TXIE = 1; // Enable Transmit Interrupt
+    IPC8bits.U1IP = UART1_PRIORITY; // Set Priority Level
 }
 
-void wifi_send(unsigned char *data, int len){
-    
+void wifi_send(unchar *data, uint len) {
+    unchar lenSt[4];
+    utoa(lenSt, len, 10);
+    uint i;
+    uint numLen = 0;
+    for (i = 0; i < 4; i++) {
+        if (lenSt[i] > '0') {
+            numLen++;
+        } else break;
+    }
+    txBufAdd("AT+CIPSEND=", 11);
+    txBufAddLn(lenSt, numLen);
+    txBufAdd(">", 1);
+    txBufAddLn(data, len);
+    __sendNext();
+}
+
+void wifi_startTCPServer(unchar *port, uint len) {
+    txBufAddLn("AT+CIPMUX=1", 11);
+
+    txBufAdd("AT+CIPSERVER=", 13);
+    txBufAdd("1,", 2);
+    txBufAddLn(port, len);
+    __sendNext();
+}
+
+void wifi_setSoftAP(unchar *ssid, uint ssidLen, unchar *pwd, uint pwdLen) {
+    txBufAdd("AT+CWSAP_CUR=", 13);
+    txBufAddStr(ssid, ssidLen);
+    txBufAdd(",", 1);
+    txBufAddStr(pwd, pwdLen);
+    txBufAddLn(",8,3", 4);
+    __sendNext();
 }
