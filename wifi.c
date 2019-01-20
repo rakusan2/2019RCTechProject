@@ -93,10 +93,12 @@ inline void txBufAddStr_(unchar *data){
 inline void txBufAddLn(unchar *data, uint len) {
     txBufAdd(data, len);
     txBufAdd("\r\n", 2);
+    __sendNext();
 }
 inline void txBufAddLn_(unchar *data) {
     txBufAdd_(data);
     txBufAdd("\r\n", 2);
+    __sendNext();
 }
 
 __ISR(_UART_1_VECTOR, IPL6SOFT) UARTInt() {
@@ -143,29 +145,23 @@ void wifi_init() {
     IPC8bits.U1IP = UART1_PRIORITY; // Set Priority Level
 }
 
-void wifi_send(unchar *data, uint len) {
+void wifi_send(unchar *data, uint len, unchar *linkID) {
     unchar lenSt[4];
     utoa(lenSt, len, 10);
-    uint i;
-    uint numLen = 0;
-    for (i = 0; i < 4; i++) {
-        if (lenSt[i] > '0') {
-            numLen++;
-        } else break;
-    }
+    
     txBufAdd_("AT+CIPSEND=");
-    txBufAddLn(lenSt, numLen);
+    txBufAdd_(linkID);
+    txBufAddChar(',');
+    txBufAddLn_(lenSt);
     txBufAddLn(data, len);
-    __sendNext();
 }
 
 void wifi_startTCPServer(unchar *port) {
-    txBufAddLn_("AT+CIPMUX=1");
+    txBufAddLn_("AT+CIPMUX=1"); // TCP Server requires for multiple connections to be enabled
 
     txBufAdd_("AT+CIPSERVER=");
     txBufAdd_("1,");
     txBufAddLn_(port);
-    __sendNext();
 }
 
 void wifi_setSoftAP(unchar *ssid, unchar *pwd) {
@@ -174,5 +170,4 @@ void wifi_setSoftAP(unchar *ssid, unchar *pwd) {
     txBufAdd_(",");
     txBufAddStr_(pwd);
     txBufAddLn_(",8,3");
-    __sendNext();
 }
