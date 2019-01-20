@@ -34,5 +34,5 @@ typedef unsigned int uint;
 
 void wifi_init();
 void wifi_send(unchar *data, int len);
-void wifi_startTCPServer(unchar *port, uint len);
-void wifi_setSoftAP(unchar *ssid, uint ssidLen, unchar *pwd, uint pwdLen);
+void wifi_startTCPServer(unchar *port);
+void wifi_setSoftAP(unchar *ssid, unchar *pwd);

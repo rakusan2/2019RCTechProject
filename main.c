@@ -62,8 +62,8 @@ void tcp_receive(unchar *data, uint len) {
  */
 int main(int argc, char** argv) {
     wifi_init();
-    wifi_setSoftAP("Small Device", 12,"pic32mx170f256b", 15);
-    wifi_startTCPServer("8888", 4);
+    wifi_setSoftAP("Small Device","pic32mx170f256b");
+    wifi_startTCPServer("8888");
     while (1) {
         _wait();
     }

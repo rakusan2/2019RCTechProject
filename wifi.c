@@ -46,6 +46,11 @@ void __sendNext() {
     }
 }
 
+inline void txBufAddChar(unchar c){
+    txBuf[txBufLen] = c;
+    txBufLen++;
+}
+
 void txBufAdd(unchar *data, uint len) {
     uint i;
     for (i = 0; i < len; i++) {
@@ -54,21 +59,33 @@ void txBufAdd(unchar *data, uint len) {
     txBufLen += len;
 }
 
-void txBufAddStr(unchar *data, uint len){
-    txBufAdd("\"",1);
+void txBufAdd_(unchar *data){
+    uint i=0;
+    while(data[i] !='\0'){
+        txBuf[txBufLen + i] = data[i];
+        i++;
+    }
+    txBufLen+=i;
+}
+
+inline void txBufAddStr(unchar *data, uint len){
+    txBufAddChar('"');
     txBufAdd(data,len);
-    txBufAdd("\"",1);
+    txBufAddChar('"');
+}
+inline void txBufAddStr_(unchar *data){
+    txBufAddChar('"');
+    txBufAdd_(data);
+    txBufAddChar('"');
 }
 
 inline void txBufAddLn(unchar *data, uint len) {
     txBufAdd(data, len);
     txBufAdd("\r\n", 2);
 }
-
-void send(unchar *comand, uint cLen, unchar *data, uint dLen) {
-    txBufAdd(comand, cLen);
-    txBufAdd(data, dLen);
-    __sendNext();
+inline void txBufAddLn_(unchar *data) {
+    txBufAdd_(data);
+    txBufAdd("\r\n", 2);
 }
 
 __ISR(_UART_1_VECTOR, IPL6SOFT) UARTInt() {
@@ -122,27 +139,27 @@ void wifi_send(unchar *data, uint len) {
             numLen++;
         } else break;
     }
-    txBufAdd("AT+CIPSEND=", 11);
+    txBufAdd_("AT+CIPSEND=");
     txBufAddLn(lenSt, numLen);
-    txBufAdd(">", 1);
+    txBufAdd_(">");
     txBufAddLn(data, len);
     __sendNext();
 }
 
-void wifi_startTCPServer(unchar *port, uint len) {
-    txBufAddLn("AT+CIPMUX=1", 11);
+void wifi_startTCPServer(unchar *port) {
+    txBufAddLn_("AT+CIPMUX=1");
 
-    txBufAdd("AT+CIPSERVER=", 13);
-    txBufAdd("1,", 2);
-    txBufAddLn(port, len);
+    txBufAdd_("AT+CIPSERVER=");
+    txBufAdd_("1,");
+    txBufAddLn_(port);
     __sendNext();
 }
 
-void wifi_setSoftAP(unchar *ssid, uint ssidLen, unchar *pwd, uint pwdLen) {
-    txBufAdd("AT+CWSAP_CUR=", 13);
-    txBufAddStr(ssid, ssidLen);
-    txBufAdd(",", 1);
-    txBufAddStr(pwd, pwdLen);
-    txBufAddLn(",8,3", 4);
+void wifi_setSoftAP(unchar *ssid, unchar *pwd) {
+    txBufAdd_("AT+CWSAP_CUR=");
+    txBufAddStr_(ssid);
+    txBufAdd_(",");
+    txBufAddStr_(pwd);
+    txBufAddLn_(",8,3");
     __sendNext();
 }
