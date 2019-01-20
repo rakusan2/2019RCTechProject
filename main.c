@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "wifi.h"
+#include "tools.h"
 
 // DEVCFG0
 #pragma config CP = OFF
@@ -30,16 +31,6 @@
 #pragma config IOL1WAY = 0
 #pragma config PMDL1WAY = 0
 
-int startsWith(unchar *str, uint strLen, unchar *start, uint startLen) {
-    if (strLen < startLen)return 0;
-    uint i;
-    for (i = 0; i < startLen; i++) {
-        if (str[i] != start[i]) {
-            return 0;
-        }
-    }
-    return 1;
-}
 
 void wifi_receive(unchar *data, uint len) {
     if (startsWith(data, len, "+IPD", 4)) {
@@ -53,9 +44,6 @@ void wifi_receive(unchar *data, uint len) {
     }
 }
 
-void tcp_receive(unchar *data, uint len) {
-
-}
 
 /*
  * 

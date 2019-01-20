@@ -17,9 +17,8 @@
 #include <xc.h>
 #include <sys/attribs.h>
 #include <stdlib.h>
+#include "tools.h"
 
-typedef unsigned char unchar;
-typedef unsigned int uint;
 #define UART1_PRIORITY 6
 #define TXBufSize 2000
 #define RXBufSize 2000
@@ -31,19 +30,31 @@ uint rxBufLen = 0;
 uint txPointer = 0;
 uint rxPointer = 0;
 
-
+int pauseTX=0;
 // Located In Main
 void wifi_receive(unsigned char *data, unsigned int len);
 
 void __sendNext() {
-    if (!U1STAbits.UTXBF && txPointer < txBufLen) {
+    if (!U1STAbits.UTXBF && txPointer < txBufLen && !pauseTX) {
         U1TXREG = txBuf[txPointer];
         txPointer++;
         if (txPointer == txBufLen) {
             txPointer = txBufLen = 0;
         }
+        if(txBuf[txPointer]=='\n'){
+            pauseTX=1;
+        }
         __sendNext();
     }
+}
+
+void resumeTX(unchar *data,uint len){
+    if(startsWith(data,len,"FAIL",2)){
+        txBufLen = txPointer = 0;
+    }else{
+        pauseTX=0;
+    }
+    wifi_receive(data,len);
 }
 
 inline void txBufAddChar(unchar c){
@@ -92,8 +103,11 @@ __ISR(_UART_1_VECTOR, IPL6SOFT) UARTInt() {
     if (IFS1bits.U1RXIF) {
         while (U1STAbits.URXDA) {
             rxBuf[rxPointer] = U1RXREG;
+            if(pauseTX && rxBuf[rxPointer] == '>'){
+                pauseTX = 0;
+            }
             if (rxBuf[rxPointer] == '\n') {
-                wifi_receive(rxBuf, rxPointer + 1);
+                resumeTX(rxBuf, rxPointer + 1);
                 rxPointer = 0;
             } else {
                 rxPointer++;
@@ -141,7 +155,6 @@ void wifi_send(unchar *data, uint len) {
     }
     txBufAdd_("AT+CIPSEND=");
     txBufAddLn(lenSt, numLen);
-    txBufAdd_(">");
     txBufAddLn(data, len);
     __sendNext();
 }

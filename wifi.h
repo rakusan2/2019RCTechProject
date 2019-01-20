@@ -17,10 +17,6 @@
 #include <xc.h>
 #include <sys/attribs.h>
 
-
-typedef unsigned char unchar;
-typedef unsigned int uint;
-
 /* ************************************************************************** */
 /* ************************************************************************** */
 /* Section: Included Files                                                    */
