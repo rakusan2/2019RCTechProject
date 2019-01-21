@@ -38,25 +38,24 @@ void wifi_receive(unsigned char *data, unsigned int len);
  * Try to add a byte to the TX buffer
  */
 void __sendNext() {
-    if (!U1STAbits.UTXBF && (txPointer < txBufLen) && !pauseTX) {
+    if(U1STAbits.UTXBF){
+        IEC1bits.U1TXIE = 1; // If the TX Buffer is full then set an interrupt for when it is not
+    }else if ((txPointer < txBufLen) && !pauseTX) {
         if(!txPointer){
             PORTBbits.RB5 = 1;
         }
-        U1TXREG = txBuf[txPointer];
+        U1TXREG = txBuf[txPointer]; // Add next byte to the buffer
         txPointer++;
         if(txBuf[txPointer]=='\n'){
-            pauseTX=1;
+            pauseTX=1;  // Pause transmission when a new line is sent
         }
         if (txPointer == txBufLen) {
-            txPointer = txBufLen = 0;
+            txPointer = txBufLen = 0;   // Restart filling the buffer when the end is reached
             PORTBbits.RB5 = 0;
         }
         __sendNext();
-    }
-    if(U1STAbits.UTXBF){
-        IEC1bits.U1TXIE = 1;
     }else{
-        IEC1bits.U1TXIE = 0;
+        IEC1bits.U1TXIE = 0;    // Disable the TX interrupt when the buffer is not full
     }
 }
 
