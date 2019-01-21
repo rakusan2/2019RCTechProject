@@ -39,10 +39,14 @@ void wifi_receive(unsigned char *data, unsigned int len);
  */
 void __sendNext() {
     if (!U1STAbits.UTXBF && txPointer < txBufLen && !pauseTX) {
+        if(!txPointer){
+            PORTBbits.RB5 = 1;
+        }
         U1TXREG = txBuf[txPointer];
         txPointer++;
         if (txPointer == txBufLen) {
             txPointer = txBufLen = 0;
+            PORTBbits.RB5 = 0;
         }
         if(txBuf[txPointer]=='\n'){
             pauseTX=1;
@@ -179,6 +183,8 @@ void __ISR(_UART_1_VECTOR, IPL6SOFT) UARTInt() {
  * Initialize the UART for the WiFi module
  */
 void wifi_init() {
+    TRISBCLR = 0b11 << 5; // Set Ports for LED and WiFi RESET as outputs
+    PORTBSET = 0b11 << 5; // Set both ports High
     int i;
     for (i = 0; i < TXBufSize; i++) {
         txBuf[i] = 0;

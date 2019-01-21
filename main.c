@@ -10,9 +10,9 @@
 #include <stdlib.h>
 #include "wifi.h"
 #include "tools.h"
-#include "turnSensor.h"
-#include "I2CMaster.h"
-#include "MPU6050.h"
+//#include "turnSensor.h"
+//#include "I2CMaster.h"
+//#include "MPU6050.h"
 
 // DEVCFG0
 #pragma config CP = OFF
@@ -58,9 +58,9 @@ void switchChange
  */
 int main(int argc, char** argv) {
     wifi_init();
-    ts_init();
-    i2c_init();
-    mpu_init();
+    //ts_init();
+    //i2c_init();
+    //mpu_init();
     wifi_setSoftAP("Small Device","pic32mx170f256b");
     wifi_startTCPServer("8888");
     while (1) {
