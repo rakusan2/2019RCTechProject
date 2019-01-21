@@ -57,6 +57,9 @@ void switchChange
 
  */
 int main(int argc, char** argv) {
+    INTCONbits.MVEC=1;  // Enable Multi Vector Interrupts
+    asm volatile("ei"); // Enable Interrupts
+   
     wifi_init();
     //ts_init();
     //i2c_init();

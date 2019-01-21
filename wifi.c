@@ -38,20 +38,25 @@ void wifi_receive(unsigned char *data, unsigned int len);
  * Try to add a byte to the TX buffer
  */
 void __sendNext() {
-    if (!U1STAbits.UTXBF && txPointer < txBufLen && !pauseTX) {
+    if (!U1STAbits.UTXBF && (txPointer < txBufLen) && !pauseTX) {
         if(!txPointer){
             PORTBbits.RB5 = 1;
         }
         U1TXREG = txBuf[txPointer];
         txPointer++;
+        if(txBuf[txPointer]=='\n'){
+            pauseTX=1;
+        }
         if (txPointer == txBufLen) {
             txPointer = txBufLen = 0;
             PORTBbits.RB5 = 0;
         }
-        if(txBuf[txPointer]=='\n'){
-            pauseTX=1;
-        }
         __sendNext();
+    }
+    if(U1STAbits.UTXBF){
+        IEC1bits.U1TXIE = 1;
+    }else{
+        IEC1bits.U1TXIE = 0;
     }
 }
 
@@ -167,6 +172,7 @@ void __ISR(_UART_1_VECTOR, IPL6SOFT) UARTInt() {
             if (rxBuf[rxPointer] == '\n') {
                 resumeTX(rxBuf, rxPointer + 1);
                 rxPointer = 0;
+                __sendNext();
             } else {
                 rxPointer++;
             }
@@ -201,7 +207,8 @@ void wifi_init() {
     U1BRG = 0x0019;
 
     IEC1bits.U1RXIE = 1; // Enable Receive Interrupt
-    IEC1bits.U1TXIE = 1; // Enable Transmit Interrupt
+    // Transmit Interrupt needs to be enabled and disabled on the fly
+    
     IPC8bits.U1IP = UART1_PRIORITY; // Set Priority Level
 }
 
