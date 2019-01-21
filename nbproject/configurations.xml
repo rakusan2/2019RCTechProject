@@ -6,6 +6,9 @@
                    projectFiles="true">
       <itemPath>wifi.h</itemPath>
       <itemPath>tools.h</itemPath>
+      <itemPath>turnSensor.h</itemPath>
+      <itemPath>I2CMaster.h</itemPath>
+      <itemPath>MPU6050.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -17,12 +20,17 @@
       <itemPath>main.c</itemPath>
       <itemPath>wifi.c</itemPath>
       <itemPath>tools.c</itemPath>
+      <itemPath>turnSensor.c</itemPath>
+      <itemPath>I2CMaster.c</itemPath>
+      <itemPath>MPU6050.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
                    projectFiles="false">
       <itemPath>Makefile</itemPath>
     </logicalFolder>
+    <itemPath>Ports.txt</itemPath>
+    <itemPath>WiFiDataStructure.txt</itemPath>
   </logicalFolder>
   <sourceRootList>
     <Elem>.</Elem>

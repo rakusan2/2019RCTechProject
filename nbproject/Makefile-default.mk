@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=main.c wifi.c tools.c
+SOURCEFILES_QUOTED_IF_SPACED=main.c wifi.c tools.c turnSensor.c I2CMaster.c MPU6050.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/main.o ${OBJECTDIR}/wifi.o ${OBJECTDIR}/tools.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/main.o.d ${OBJECTDIR}/wifi.o.d ${OBJECTDIR}/tools.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/main.o ${OBJECTDIR}/wifi.o ${OBJECTDIR}/tools.o ${OBJECTDIR}/turnSensor.o ${OBJECTDIR}/I2CMaster.o ${OBJECTDIR}/MPU6050.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/main.o.d ${OBJECTDIR}/wifi.o.d ${OBJECTDIR}/tools.o.d ${OBJECTDIR}/turnSensor.o.d ${OBJECTDIR}/I2CMaster.o.d ${OBJECTDIR}/MPU6050.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/main.o ${OBJECTDIR}/wifi.o ${OBJECTDIR}/tools.o
+OBJECTFILES=${OBJECTDIR}/main.o ${OBJECTDIR}/wifi.o ${OBJECTDIR}/tools.o ${OBJECTDIR}/turnSensor.o ${OBJECTDIR}/I2CMaster.o ${OBJECTDIR}/MPU6050.o
 
 # Source Files
-SOURCEFILES=main.c wifi.c tools.c
+SOURCEFILES=main.c wifi.c tools.c turnSensor.c I2CMaster.c MPU6050.c
 
 
 CFLAGS=
@@ -124,6 +124,24 @@ ${OBJECTDIR}/tools.o: tools.c  nbproject/Makefile-${CND_CONF}.mk
 	@${RM} ${OBJECTDIR}/tools.o 
 	@${FIXDEPS} "${OBJECTDIR}/tools.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_SIMULATOR=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/tools.o.d" -o ${OBJECTDIR}/tools.o tools.c    -DXPRJ_default=$(CND_CONF)  -legacy-libc  $(COMPARISON_BUILD) 
 	
+${OBJECTDIR}/turnSensor.o: turnSensor.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/turnSensor.o.d 
+	@${RM} ${OBJECTDIR}/turnSensor.o 
+	@${FIXDEPS} "${OBJECTDIR}/turnSensor.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_SIMULATOR=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/turnSensor.o.d" -o ${OBJECTDIR}/turnSensor.o turnSensor.c    -DXPRJ_default=$(CND_CONF)  -legacy-libc  $(COMPARISON_BUILD) 
+	
+${OBJECTDIR}/I2CMaster.o: I2CMaster.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/I2CMaster.o.d 
+	@${RM} ${OBJECTDIR}/I2CMaster.o 
+	@${FIXDEPS} "${OBJECTDIR}/I2CMaster.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_SIMULATOR=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/I2CMaster.o.d" -o ${OBJECTDIR}/I2CMaster.o I2CMaster.c    -DXPRJ_default=$(CND_CONF)  -legacy-libc  $(COMPARISON_BUILD) 
+	
+${OBJECTDIR}/MPU6050.o: MPU6050.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/MPU6050.o.d 
+	@${RM} ${OBJECTDIR}/MPU6050.o 
+	@${FIXDEPS} "${OBJECTDIR}/MPU6050.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_SIMULATOR=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/MPU6050.o.d" -o ${OBJECTDIR}/MPU6050.o MPU6050.c    -DXPRJ_default=$(CND_CONF)  -legacy-libc  $(COMPARISON_BUILD) 
+	
 else
 ${OBJECTDIR}/main.o: main.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
@@ -142,6 +160,24 @@ ${OBJECTDIR}/tools.o: tools.c  nbproject/Makefile-${CND_CONF}.mk
 	@${RM} ${OBJECTDIR}/tools.o.d 
 	@${RM} ${OBJECTDIR}/tools.o 
 	@${FIXDEPS} "${OBJECTDIR}/tools.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/tools.o.d" -o ${OBJECTDIR}/tools.o tools.c    -DXPRJ_default=$(CND_CONF)  -legacy-libc  $(COMPARISON_BUILD) 
+	
+${OBJECTDIR}/turnSensor.o: turnSensor.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/turnSensor.o.d 
+	@${RM} ${OBJECTDIR}/turnSensor.o 
+	@${FIXDEPS} "${OBJECTDIR}/turnSensor.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/turnSensor.o.d" -o ${OBJECTDIR}/turnSensor.o turnSensor.c    -DXPRJ_default=$(CND_CONF)  -legacy-libc  $(COMPARISON_BUILD) 
+	
+${OBJECTDIR}/I2CMaster.o: I2CMaster.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/I2CMaster.o.d 
+	@${RM} ${OBJECTDIR}/I2CMaster.o 
+	@${FIXDEPS} "${OBJECTDIR}/I2CMaster.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/I2CMaster.o.d" -o ${OBJECTDIR}/I2CMaster.o I2CMaster.c    -DXPRJ_default=$(CND_CONF)  -legacy-libc  $(COMPARISON_BUILD) 
+	
+${OBJECTDIR}/MPU6050.o: MPU6050.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/MPU6050.o.d 
+	@${RM} ${OBJECTDIR}/MPU6050.o 
+	@${FIXDEPS} "${OBJECTDIR}/MPU6050.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/MPU6050.o.d" -o ${OBJECTDIR}/MPU6050.o MPU6050.c    -DXPRJ_default=$(CND_CONF)  -legacy-libc  $(COMPARISON_BUILD) 
 	
 endif
 
