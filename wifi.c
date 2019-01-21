@@ -101,7 +101,7 @@ inline void txBufAddLn_(unchar *data) {
     __sendNext();
 }
 
-__ISR(_UART_1_VECTOR, IPL6SOFT) UARTInt() {
+void __ISR(_UART_1_VECTOR, IPL6SOFT) UARTInt() {
     if (IFS1bits.U1RXIF) {
         while (U1STAbits.URXDA) {
             rxBuf[rxPointer] = U1RXREG;
@@ -135,22 +135,21 @@ void wifi_init() {
     U1RXR = 0x0011; // Set UART1 RX to Port B13
     RPB15R = 0b0001; // Set UART1 TX to Port B15
 
-    U1MODE = 0b1000100010000000;
+    U1MODE = 0x8880;
     U1STA = 0x1400;
     U1BRG = 0x0019;
-    U1MODESET = 0x8000;
 
     IEC1bits.U1RXIE = 1; // Enable Receive Interrupt
     IEC1bits.U1TXIE = 1; // Enable Transmit Interrupt
     IPC8bits.U1IP = UART1_PRIORITY; // Set Priority Level
 }
 
-void wifi_send(unchar *data, uint len, unchar *linkID) {
+void wifi_send(unchar *data, uint len, unchar linkID) {
     unchar lenSt[4];
     utoa(lenSt, len, 10);
     
     txBufAdd_("AT+CIPSEND=");
-    txBufAdd_(linkID);
+    txBufAddChar(linkID);
     txBufAddChar(',');
     txBufAddLn_(lenSt);
     txBufAddLn(data, len);

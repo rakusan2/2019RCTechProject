@@ -33,14 +33,14 @@
 
 
 void wifi_receive(unchar *data, uint len) {
-    if (startsWith(data, len, "+IPD", 4)) {
+    if (startsWith(data, len, "+IPD", 4)) { // TCP Data is structured as (+IPD,0,n:xxxxxxxxxx)	
         unchar echo[10];
         len = min(16, len);
         uint i;
         for (i = 6; i < len; i++) {
             echo[i - 6] = data[i];
         }
-        wifi_send(echo, len - 6);
+        wifi_send(echo, len - 6, data[5]);
     }
 }
 

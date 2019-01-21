@@ -29,6 +29,6 @@
 /* TODO:  Include other files here if needed. */
 
 void wifi_init();
-void wifi_send(unchar *data, uint len, unchar *linkID);
+void wifi_send(unchar *data, uint len, unchar linkID);
 void wifi_startTCPServer(unchar *port);
 void wifi_setSoftAP(unchar *ssid, unchar *pwd);
