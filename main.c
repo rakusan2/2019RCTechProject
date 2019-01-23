@@ -57,6 +57,8 @@ void switchChange
 
  */
 int main(int argc, char** argv) {
+    ANSELA = 0;     // Disable All Analog pins to be used as digital
+    ANSELB = 0;
     INTCONbits.MVEC=1;  // Enable Multi Vector Interrupts
     asm volatile("ei"); // Enable Interrupts
    

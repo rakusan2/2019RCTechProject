@@ -30,7 +30,7 @@ uint rxBufLen = 0;
 uint txPointer = 0;
 uint rxPointer = 0;
 
-int pauseTX=0;
+int pauseTX = 0;
 // Located In Main
 void wifi_receive(unsigned char *data, unsigned int len);
 
@@ -38,24 +38,24 @@ void wifi_receive(unsigned char *data, unsigned int len);
  * Try to add a byte to the TX buffer
  */
 void __sendNext() {
-    if(U1STAbits.UTXBF){
+    if (U1STAbits.UTXBF) {
         IEC1bits.U1TXIE = 1; // If the TX Buffer is full then set an interrupt for when it is not
-    }else if ((txPointer < txBufLen) && !pauseTX) {
-        if(!txPointer){
+    } else if ((txPointer < txBufLen) && !pauseTX) {
+        if (!txPointer) {
             PORTBbits.RB5 = 1;
         }
         U1TXREG = txBuf[txPointer]; // Add next byte to the buffer
-        txPointer++;
-        if(txBuf[txPointer]=='\n'){
-            pauseTX=1;  // Pause transmission when a new line is sent
+        if (txBuf[txPointer] == '\n') {
+            pauseTX = 1; // Pause transmission when a new line is sent
         }
+        txPointer++;
         if (txPointer == txBufLen) {
-            txPointer = txBufLen = 0;   // Restart filling the buffer when the end is reached
+            txPointer = txBufLen = 0; // Restart filling the buffer when the end is reached
             PORTBbits.RB5 = 0;
         }
         __sendNext();
-    }else{
-        IEC1bits.U1TXIE = 0;    // Disable the TX interrupt when the buffer is not full
+    } else {
+        IEC1bits.U1TXIE = 0; // Disable the TX interrupt when the buffer is not full
     }
 }
 
@@ -65,13 +65,13 @@ void __sendNext() {
  * @param data  Received data
  * @param len   Length of received data
  */
-void resumeTX(unchar *data,uint len){
-    if(startsWith(data,len,"FAIL",2)){
+void resumeTX(unchar *data, uint len) {
+    if (startsWith(data, len, "FAIL", 2)) {
         txBufLen = txPointer = 0;
-    }else{
-        pauseTX=0;
+    } else {
+        pauseTX = 0;
     }
-    wifi_receive(data,len);
+    wifi_receive(data, len);
 }
 
 /**
@@ -79,7 +79,7 @@ void resumeTX(unchar *data,uint len){
  * 
  * @param c character to be added
  */
-inline void txBufAddChar(unchar c){
+inline void txBufAddChar(unchar c) {
     txBuf[txBufLen] = c;
     txBufLen++;
 }
@@ -103,13 +103,13 @@ void txBufAdd(unchar *data, uint len) {
  * 
  * @param data  Array of characters
  */
-void txBufAdd_(unchar *data){
-    uint i=0;
-    while(data[i] !='\0'){
+void txBufAdd_(unchar *data) {
+    uint i = 0;
+    while (data[i] != '\0') {
         txBuf[txBufLen + i] = data[i];
         i++;
     }
-    txBufLen+=i;
+    txBufLen += i;
 }
 
 /**
@@ -118,9 +118,9 @@ void txBufAdd_(unchar *data){
  * @param data  Array of characters
  * @param len   Length of the array
  */
-inline void txBufAddStr(unchar *data, uint len){
+inline void txBufAddStr(unchar *data, uint len) {
     txBufAddChar('"');
-    txBufAdd(data,len);
+    txBufAdd(data, len);
     txBufAddChar('"');
 }
 
@@ -129,7 +129,7 @@ inline void txBufAddStr(unchar *data, uint len){
  * 
  * @param data  Array of characters
  */
-inline void txBufAddStr_(unchar *data){
+inline void txBufAddStr_(unchar *data) {
     txBufAddChar('"');
     txBufAdd_(data);
     txBufAddChar('"');
@@ -145,6 +145,7 @@ inline void txBufAddLn(unchar *data, uint len) {
     txBufAdd(data, len);
     txBufAdd("\r\n", 2);
     __sendNext();
+    PORTBbits.RB5 = 1;
 }
 
 /**
@@ -156,6 +157,7 @@ inline void txBufAddLn_(unchar *data) {
     txBufAdd_(data);
     txBufAdd("\r\n", 2);
     __sendNext();
+    PORTBbits.RB5 = 1;
 }
 
 /**
@@ -165,11 +167,15 @@ void __ISR(_UART_1_VECTOR, IPL6SOFT) UARTInt() {
     if (IFS1bits.U1RXIF) {
         while (U1STAbits.URXDA) { // While there are data in the receive buffer
             rxBuf[rxPointer] = U1RXREG;
-            if(pauseTX && rxBuf[rxPointer] == '>'){ // Resume when READY to transmit TCP DATA
+            if (pauseTX && rxPointer == 0 && rxBuf[rxPointer] == '>') { // Resume when READY to transmit TCP DATA
                 pauseTX = 0;
+                __sendNext();
+            }
+            if (rxBuf[rxPointer] == '\r') {
+                PORTBbits.RB5 = 0;
             }
             if (rxBuf[rxPointer] == '\n') {
-                resumeTX(rxBuf, rxPointer + 1);
+                resumeTX(rxBuf, rxPointer);
                 rxPointer = 0;
                 __sendNext();
             } else {
@@ -188,6 +194,16 @@ void __ISR(_UART_1_VECTOR, IPL6SOFT) UARTInt() {
  * Initialize the UART for the WiFi module
  */
 void wifi_init() {
+
+    TRISBbits.TRISB5 = 0;   // Set LED pin to output
+    TRISBbits.TRISB6 = 0;   // Set WiFi RESET pin to output
+    TRISBbits.TRISB13 = 1;  // Set RX pin to input
+    TRISBbits.TRISB15 = 0;  // Set TX pin to input
+    
+    PORTBbits.RB5 = 1;      // Light the LED
+    PORTBbits.RB6 = 1;      // Set RESET pit to HIGH to enable the Wifi module
+    //ANSELBbits.ANSB13 = 0;
+
     TRISBCLR = 0b11 << 5; // Set Ports for LED and WiFi RESET as outputs
     PORTBSET = 0b11 << 5; // Set both ports High
     int i;
@@ -198,17 +214,19 @@ void wifi_init() {
         rxBuf[i] = 0;
     }
 
-    U1RXR = 0x0011; // Set UART1 RX to Port B13
+    U1RXR = 0b0011; // Set UART1 RX to Port B13
     RPB15R = 0b0001; // Set UART1 TX to Port B15
 
-    U1MODE = 0x8880;
     U1STA = 0x1400;
     U1BRG = 0x0019;
+    U1MODE = 0x8880;
 
     IEC1bits.U1RXIE = 1; // Enable Receive Interrupt
     // Transmit Interrupt needs to be enabled and disabled on the fly
-    
+
     IPC8bits.U1IP = UART1_PRIORITY; // Set Priority Level
+
+    //txBufAddLn_("ATE0");
 }
 
 /**
@@ -221,7 +239,7 @@ void wifi_init() {
 void wifi_send(unchar *data, uint len, unchar linkID) {
     unchar lenSt[4];
     utoa(lenSt, len, 10);
-    
+
     txBufAdd_("AT+CIPSEND=");
     txBufAddChar(linkID);
     txBufAddChar(',');
