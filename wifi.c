@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include "tools.h"
 
-#define UART1_PRIORITY 6
+#define UART1_PRIORITY 7
 #define TXBufSize 2000
 #define RXBufSize 2000
 
@@ -66,12 +66,17 @@ void __sendNext() {
  * @param len   Length of received data
  */
 void resumeTX(unchar *data, uint len) {
-    if (startsWith(data, len, "FAIL", 2)) {
+    if (startsWith(data, len, "FAIL", 4)) {
         txBufLen = txPointer = 0;
-    } else {
+        wifi_receive(data, len);
+    } else if(len>0 && !startsWith(data,len,"AT",2) && !startsWith(data,len,"busy",4)) {
         pauseTX = 0;
+        wifi_receive(data, len);
+        __sendNext();
     }
-    wifi_receive(data, len);
+    if(startsWith(data,len,"SEND",4) || startsWith(data,len,"OK",2)){
+        PORTBbits.RB5=1;
+    }
 }
 
 /**
@@ -161,21 +166,57 @@ inline void txBufAddLn_(unchar *data) {
 }
 
 /**
+ * Get Number of data bytes in IPD response
+ * 
+ * @param data  Array of characters
+ * @param collonLocation Location of ':' in IPD response
+ */
+int getIPDLen(unchar *data, int collonLocation){
+    int i = collonLocation - 1;
+    int num = 0;
+    int multiplier = 1;
+    while(data[i]!=',' && i > 0){
+        num += (data[i]-'0') * multiplier;
+        multiplier*=10;
+        i--;
+    }
+    if(i<4){
+        return -1;
+    }
+    return num;
+}
+
+int toRead = -1;
+
+/**
  * UART Interrupt handler
  */
-void __ISR(_UART_1_VECTOR, IPL6SOFT) UARTInt() {
+void __ISR(_UART_1_VECTOR, IPL7SOFT) UARTInt() {
     if (IFS1bits.U1RXIF) {
+        unchar tempChar;
         while (U1STAbits.URXDA) { // While there are data in the receive buffer
-            rxBuf[rxPointer] = U1RXREG;
-            if (pauseTX && rxPointer == 0 && rxBuf[rxPointer] == '>') { // Resume when READY to transmit TCP DATA
+            rxBuf[rxPointer] = tempChar = U1RXREG;
+            
+            if (pauseTX && rxPointer == 0 && tempChar == '>') { // Resume when READY to transmit TCP DATA
                 pauseTX = 0;
                 __sendNext();
             }
-            if (rxBuf[rxPointer] == '\r') {
-                PORTBbits.RB5 = 0;
+
+            // On an IPD response get the number of characters to read
+            if(tempChar == ':' && startsWith(rxBuf, rxPointer, "+IPD", 4)){
+                toRead = getIPDLen(rxBuf, rxPointer);
             }
-            if (rxBuf[rxPointer] == '\n') {
-                resumeTX(rxBuf, rxPointer);
+            if(toRead == 0){ // Stop buffering received data when there is nothing to read
+                tempChar='\n';
+                rxPointer+=2;
+                toRead=-1;
+            }else if(toRead>0){
+                toRead--;
+            }
+
+            // Non IPD responses are new line terminated
+            if (tempChar == '\n' && toRead < 0) {
+                resumeTX(rxBuf, rxPointer-1);
                 rxPointer = 0;
                 __sendNext();
             } else {
@@ -206,27 +247,37 @@ void wifi_init() {
 
     TRISBCLR = 0b11 << 5; // Set Ports for LED and WiFi RESET as outputs
     PORTBSET = 0b11 << 5; // Set both ports High
-    int i;
-    for (i = 0; i < TXBufSize; i++) {
-        txBuf[i] = 0;
-    }
-    for (i = 0; i < RXBufSize; i++) {
-        rxBuf[i] = 0;
-    }
+    //int i;
+    //for (i = 0; i < TXBufSize; i++) {
+    //    txBuf[i] = 0;
+    //}
+    //for (i = 0; i < RXBufSize; i++) {
+    //    rxBuf[i] = 0;
+    //}
 
-    U1RXR = 0b0011; // Set UART1 RX to Port B13
-    RPB15R = 0b0001; // Set UART1 TX to Port B15
-
+    U1RXR = 0x03; // Set UART1 RX to Port B13
+    RPB15R = 0x01; // Set UART1 TX to Port B15
+    
+    //CFGCONbits.IOLOCK = 0;
     U1STA = 0x1400;
     U1BRG = 0x0019;
-    U1MODE = 0x8880;
+    U1MODE = 0x8000;
+    //CFGCONbits.IOLOCK = 1;
 
+    IPC8bits.U1IP = UART1_PRIORITY; // Set Priority Level
     IEC1bits.U1RXIE = 1; // Enable Receive Interrupt
     // Transmit Interrupt needs to be enabled and disabled on the fly
 
-    IPC8bits.U1IP = UART1_PRIORITY; // Set Priority Level
-
-    //txBufAddLn_("ATE0");
+    //wait(100000);
+//    volatile uint j,i;
+//    for (j=0;j<10;j++)
+//    {
+//        for (i=0;i<655350;i++);
+//        PORTBbits.RB5 ^= 1;
+//    }   
+    PORTBbits.RB5 = 0;
+    txBufAddLn_("ATE0");
+    //txBufAddLn_("AT+RESTORE");
 }
 
 /**
@@ -237,6 +288,8 @@ void wifi_init() {
  * @param linkID    Recipient ID
  */
 void wifi_send(unchar *data, uint len, unchar linkID) {
+    // AT+CIPSEND=<linkID>,<Lenght>
+    
     unchar lenSt[4];
     utoa(lenSt, len, 10);
 
@@ -244,6 +297,7 @@ void wifi_send(unchar *data, uint len, unchar linkID) {
     txBufAddChar(linkID);
     txBufAddChar(',');
     txBufAddLn_(lenSt);
+
     txBufAddLn(data, len);
 }
 
@@ -254,9 +308,9 @@ void wifi_send(unchar *data, uint len, unchar linkID) {
  */
 void wifi_startTCPServer(unchar *port) {
     txBufAddLn_("AT+CIPMUX=1"); // TCP Server requires for multiple connections to be enabled
-
-    txBufAdd_("AT+CIPSERVER=");
-    txBufAdd_("1,");
+    
+    // AT+CIPSERVER=<Create/Destroy>,<IP Port>
+    txBufAdd_("AT+CIPSERVER=1,");
     txBufAddLn_(port);
 }
 
@@ -267,9 +321,10 @@ void wifi_startTCPServer(unchar *port) {
  * @param pwd   The password of the AP
  */
 void wifi_setSoftAP(unchar *ssid, unchar *pwd) {
-    txBufAdd_("AT+CWSAP_CUR=");
+    // AT+CWSAP="<SSID>","<Password>",<Channel>,<Type>
+    txBufAdd_("AT+CWSAP=");
     txBufAddStr_(ssid);
     txBufAdd_(",");
     txBufAddStr_(pwd);
-    txBufAddLn_(",8,3");
+    txBufAddLn_(",1,3");
 }

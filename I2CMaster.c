@@ -24,13 +24,17 @@
 #define I2C_NACK    0x103
 #define I2C_READ    0x200
 
-void (*recievers[10])();
-uint recieverLen = 0;
+void (*receivers[10])();
+uint receiverLen = 0;
 
 uint txBuf[200];
 uint txBufPointer = 0;
 uint txEndPointer = 0;
 uint txPause = 0;
+
+unchar rxBuf[1024];
+uint _rxPointer=0;
+uint rxID=0;
 
 void bufAddByte(uint byte) {
     txBuf[txEndPointer] = byte;
@@ -66,6 +70,10 @@ void __send() {
     }else if(txBufPointer == txEndPointer && txBufPointer > 0 && !I2C1STATbits.TRSTAT){
         I2C1CONbits.PEN = 1;
         txBufPointer = txEndPointer = 0;
+        if(_rxPointer){
+            receivers[rxID](rxBuf,_rxPointer);
+            _rxPointer=0;
+        }
     }
 }
 
@@ -73,8 +81,10 @@ void __ISR(_I2C_1_VECTOR, IPL5SOFT) I2CInt() {
     if (I2C1STATbits.RBF) {
         txPause = 0;
         uint id = txBuf[txBufPointer] & 0xff;
-        if(id < recieverLen){
-            recievers[id](I2C1RCV);
+        if(id < receiverLen){
+            rxID=id;
+            rxBuf[_rxPointer]=I2C1RCV;
+            _rxPointer++;
         }else {
             volatile int i = I2C1RCV;
         }
@@ -138,7 +148,7 @@ void i2c_init() {
 }
 
 unchar i2c_onRecieve(void *func){
-    recievers[recieverLen] = func;
-    recieverLen++;
-    return recieverLen-1;
+    receivers[receiverLen] = func;
+    receiverLen++;
+    return receiverLen-1;
 }
