@@ -186,7 +186,7 @@ int getIPDLen(unchar *data, int collonLocation){
     return num;
 }
 
-int toRead = -1;
+signed int toRead = -1;
 
 /**
  * UART Interrupt handler

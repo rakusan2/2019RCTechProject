@@ -1,4 +1,6 @@
 byte
-1st     (D/S/A(X/Y/Z)/G(X/Y/Z)/L/U) Drive, Steer, Accelerometer, Gyro, Limit Switches, Ultrasonic Sensor
+1st     (D/S/A(X/Y/Z)/G(X/Y/Z)/L/U/V) Drive, Steer, Accelerometer, Gyro, Limit Switches, Ultrasonic Sensor, Version
 2nd     (000-255) Number to Set to if settable else ignore
 2nd Alter   \   Followed by a single byte
+
+RegExp /([DS]([\-\+]?\d{1,3}|P|N|\\.)?|[AG][XYZ]?|L|U|V)+/
