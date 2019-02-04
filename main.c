@@ -158,7 +158,7 @@ void readTCPStart(uint index, unchar *data, uint len) {
                 break;
             case 'V':
                 index++;
-                txDataAdd_("V");
+                txDataAdd_("V=0.1");
                 // Version Instruction
                 break;
             default:
@@ -177,6 +177,8 @@ void wifi_receive(unchar *data, uint len) {
             collon++;
         }
         readTCPStart(collon + 1, data, len);
+        wifi_send(txData, txLen, data[5]);
+        txLen=0;
     }
 }
 
