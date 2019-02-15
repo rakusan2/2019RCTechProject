@@ -41,9 +41,9 @@ void __sendNext() {
     if (U1STAbits.UTXBF) {
         IEC1bits.U1TXIE = 1; // If the TX Buffer is full then set an interrupt for when it is not
     } else if ((txPointer < txBufLen) && !pauseTX) {
-        if (!txPointer) {
-            PORTBbits.RB5 = 1;
-        }
+        //if (!txPointer) {
+        //    PORTBbits.RB5 = 1;
+        //}
         U1TXREG = txBuf[txPointer]; // Add next byte to the buffer
         if (txBuf[txPointer] == '\n') {
             pauseTX = 1; // Pause transmission when a new line is sent
@@ -51,7 +51,7 @@ void __sendNext() {
         txPointer++;
         if (txPointer == txBufLen) {
             txPointer = txBufLen = 0; // Restart filling the buffer when the end is reached
-            PORTBbits.RB5 = 0;
+            //PORTBbits.RB5 = 0;
         }
         __sendNext();
     } else {
@@ -74,9 +74,9 @@ void resumeTX(unchar *data, uint len) {
         wifi_receive(data, len);
         __sendNext();
     }
-    if(startsWith(data,len,"SEND",4) || startsWith(data,len,"OK",2)){
-        PORTBbits.RB5=1;
-    }
+    //if(startsWith(data,len,"SEND",4) || startsWith(data,len,"OK",2)){
+    //    PORTBbits.RB5=1;
+    //}
 }
 
 /**
@@ -150,7 +150,7 @@ inline void txBufAddLn(unchar *data, uint len) {
     txBufAdd(data, len);
     txBufAdd("\r\n", 2);
     __sendNext();
-    PORTBbits.RB5 = 1;
+    //PORTBbits.RB5 = 1;
 }
 
 /**
@@ -162,7 +162,7 @@ inline void txBufAddLn_(unchar *data) {
     txBufAdd_(data);
     txBufAdd("\r\n", 2);
     __sendNext();
-    PORTBbits.RB5 = 1;
+    //PORTBbits.RB5 = 1;
 }
 
 /**
@@ -236,17 +236,17 @@ void __ISR(_UART_1_VECTOR, IPL7SOFT) UARTInt() {
  */
 void wifi_init() {
 
-    TRISBbits.TRISB5 = 0;   // Set LED pin to output
-    TRISBbits.TRISB6 = 0;   // Set WiFi RESET pin to output
+    //TRISBbits.TRISB5 = 0;   // Set LED pin to output
+    TRISAbits.TRISA4 = 0;   // Set WiFi RESET pin to output
     TRISBbits.TRISB13 = 1;  // Set RX pin to input
     TRISBbits.TRISB15 = 0;  // Set TX pin to input
     
-    PORTBbits.RB5 = 1;      // Light the LED
-    PORTBbits.RB6 = 1;      // Set RESET pit to HIGH to enable the Wifi module
+    //PORTBbits.RB5 = 1;      // Light the LED
+    PORTAbits.RA4 = 1;      // Set RESET pit to HIGH to enable the Wifi module
     //ANSELBbits.ANSB13 = 0;
 
-    TRISBCLR = 0b11 << 5; // Set Ports for LED and WiFi RESET as outputs
-    PORTBSET = 0b11 << 5; // Set both ports High
+    //TRISBCLR = 0b11 << 5; // Set Ports for LED and WiFi RESET as outputs
+    //PORTBSET = 0b11 << 5; // Set both ports High
     //int i;
     //for (i = 0; i < TXBufSize; i++) {
     //    txBuf[i] = 0;
@@ -275,7 +275,7 @@ void wifi_init() {
 //        for (i=0;i<655350;i++);
 //        PORTBbits.RB5 ^= 1;
 //    }   
-    PORTBbits.RB5 = 0;
+    //PORTBbits.RB5 = 0;
     txBufAddLn_("ATE0");
     //txBufAddLn_("AT+RESTORE");
 }
