@@ -18,19 +18,62 @@
 #include <xc.h>
 #include <sys/attribs.h>
 #include "tools.h"
+#include "MPU6050.h"
 
-#define MPU_ADDRESS     0b1101000
-#define MPU_SMPLRT_DIV  0x19
-#define MPU_CONFIG      0x1A
-#define MPU_GYRO_CONFIG 0x1B
-#define MPU_ACCEL_CONFIG 0x1C
-#define MPU_FIFO_EN     0x23
-#define MPU_USER_CTRL   0x6A
-#define MPU_PWR_MGMT_1  0x6B
+#define MPU_ADDRESS         0b1101000
+#define MPU_SMPLRT_DIV      0x19
+#define MPU_CONFIG          0x1A
+#define MPU_GYRO_CONFIG     0x1B
+#define MPU_ACCEL_CONFIG    0x1C
+#define MPU_FIFO_EN         0x23
+#define MPU_USER_CTRL       0x6A
+#define MPU_PWR_MGMT_1      0x6B
+#define MPU_FIFO_COUNT_H    0x72
+#define MPU_FIFO_R_W        0x74
 
-void interpretFIFO(unchar data){
-}
+#define rotate(a,b,c) a[b]=c;b=(b+1)&8
+
 unchar interpretFIFO_ID;
+unchar getFIFOLen_ID;
+
+struct XYZ accel;
+struct XYZ gyro;
+uint temp[8];
+uint tempIndex = 0;
+
+
+void interpretFIFO(unchar *data, uint len){
+    uint i;
+    for(i=0;i<len;i+=14){
+        rotate(temp, tempIndex, joinHL(data,i));
+        rotate(accel.X, accel.xIndex, joinHL(data, i + 2));
+        rotate(accel.Y, accel.yIndex, joinHL(data, i + 4));
+        rotate(accel.Z, accel.zIndex, joinHL(data, i + 6));
+        rotate(gyro.X, gyro.xIndex, joinHL(data, i + 8));
+        rotate(gyro.Y, gyro.yIndex, joinHL(data, i + 10));
+        rotate(gyro.Z, gyro.zIndex, joinHL(data, i + 12));
+    }
+    mpu_data.accelX = average8(accel.X);
+    mpu_data.accelY = average8(accel.Y);
+    mpu_data.accelZ = average8(accel.Z);
+    mpu_data.gyroX = average8(gyro.X);
+    mpu_data.gyroY = average8(gyro.Y);
+    mpu_data.gyroZ = average8(gyro.Z);
+}
+void getFIFOLen(unchar *data, uint len){
+    if(len == 2){
+        i2c_getMany(MPU_ADDRESS, MPU_FIFO_R_W, joinHL(data, 0), interpretFIFO_ID);
+    }
+}
+
+void mpu_refresh(){
+    i2c_getMany(MPU_ADDRESS, MPU_FIFO_COUNT_H, 2, getFIFOLen_ID);
+}
+
+void mpu_getAccel(){
+    
+}
+
 void mpu_init(){
     
     i2c_setOne(MPU_SMPLRT_DIV, 0x4);    // Set sampling Rate to 200Hz
@@ -42,11 +85,9 @@ void mpu_init(){
     i2c_setOne(MPU_PWR_MGMT_1, 1);      // Set clock source to Gyroscope X refference
     
     interpretFIFO_ID = i2c_onRecieve(interpretFIFO);
+    getFIFOLen_ID = i2c_onRecieve(getFIFOLen);
+
+    accel.xIndex = accel.yIndex = accel.zIndex = 0;
+    gyro.xIndex = gyro.yIndex = gyro.zIndex = 0;
     
-    // Enable 32-bit timer to get data from FIFO every 0.1s
-    T4CON = T5CON = 0;
-    T4CONSET = 0x8;
-    TMR4 = 0;
-    PR4 = 0x16e360;
-    T4CONSET = 0x8000;
 }

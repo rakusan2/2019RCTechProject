@@ -19,3 +19,5 @@ typedef unsigned char unchar;
 typedef unsigned int uint;
 
 int startsWith(unchar *str, uint strLen, unchar *start, uint startLen);
+inline uint joinHL(unchar *data, uint start);
+uint average8(uint *data);

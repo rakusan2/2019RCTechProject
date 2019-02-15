@@ -56,12 +56,18 @@ void __send() {
                     I2C1CONSET = 1 << (txBufPointer > 0 ? 1 : 0);
                     break;
                 case I2C_ACK:
-                    I2C1CONbits.ACKDT = 0;
-                    I2C1CONbits.ACKEN = 1;
+                    I2C1CONbits.ACKDT = 0;  // Select ACK
+                    I2C1CONbits.ACKEN = 1;  // Send ACK
                     break;
                 case I2C_NACK:
-                    I2C1CONbits.ACKDT = 1;
-                    I2C1CONbits.ACKEN = 1;
+                    I2C1CONbits.ACKDT = 1;  // Select NACK
+                    I2C1CONbits.ACKEN = 1;  // Send NACK
+                    
+                    // Check if received data then send it to the code that requested it
+                    if(_rxPointer){
+                        receivers[rxID](rxBuf,_rxPointer);
+                        _rxPointer=0;
+                    }
                     break;
             }
         } else {
@@ -70,10 +76,6 @@ void __send() {
     }else if(txBufPointer == txEndPointer && txBufPointer > 0 && !I2C1STATbits.TRSTAT){
         I2C1CONbits.PEN = 1;
         txBufPointer = txEndPointer = 0;
-        if(_rxPointer){
-            receivers[rxID](rxBuf,_rxPointer);
-            _rxPointer=0;
-        }
     }
 }
 
@@ -97,12 +99,12 @@ void __ISR(_I2C_1_VECTOR, IPL5SOFT) I2CInt() {
 
 inline void startRead(unchar addr) {
     bufAddByte(I2C_START);
-    bufAddByte(addr | 0x80);
+    bufAddByte((addr << 1) | 0x1);
 }
 
 inline void startWrite(unchar addr, unchar reg) {
     bufAddByte(I2C_START);
-    bufAddByte(addr);
+    bufAddByte(addr<<1);
     bufAddByte(reg);
 }
 
@@ -148,7 +150,7 @@ void i2c_init() {
 }
 
 unchar i2c_onRecieve(void *func){
-    receivers[receiverLen] = func;
     receiverLen++;
-    return receiverLen-1;
+    receivers[receiverLen] = func;
+    return receiverLen;
 }
