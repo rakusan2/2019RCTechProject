@@ -322,7 +322,7 @@ void wifi_startTCPServer(unchar *port) {
  */
 void wifi_setSoftAP(unchar *ssid, unchar *pwd) {
     // AT+CWSAP="<SSID>","<Password>",<Channel>,<Type>
-    txBufAdd_("AT+CWSAP=");
+    txBufAdd_("AT+CWSAP_CUR=");
     txBufAddStr_(ssid);
     txBufAdd_(",");
     txBufAddStr_(pwd);

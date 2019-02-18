@@ -1,5 +1,5 @@
 1   25Hz Main Loop
-2
-3
+2   Ultrasonic trigger and Echo
+3   
 4   
 5   

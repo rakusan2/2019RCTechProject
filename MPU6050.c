@@ -70,10 +70,6 @@ void mpu_refresh(){
     i2c_getMany(MPU_ADDRESS, MPU_FIFO_COUNT_H, 2, getFIFOLen_ID);
 }
 
-void mpu_getAccel(){
-    
-}
-
 void mpu_init(){
     
     i2c_setOne(MPU_SMPLRT_DIV, 0x4);    // Set sampling Rate to 200Hz

@@ -1,7 +1,7 @@
 Pin Port    Use
 
-2   RA0     H-Bridge Drive -
-3   RA1     H-Bridge Drive +
+2   RA0     H-Bridge Select
+3   RA1     H-Bridge Data Input
 4   RB0     Blue Sensor Line
 5   C2INA   White Sensor Line
 6   RB2     Green Sensor Line
@@ -9,19 +9,19 @@ Pin Port    Use
 
 9   OSC1    Oscillator
 10  
-11  OC1     Drive PWM
-12
+11  OC1     Ultrasound Trigger
+12  RA4     WiFi RESET
 
-14  RB5     LED
-15  RB6     WiFi RESET
-16  RB7     H-Bridge Steer +
+14  PGD     Programming Data
+15  PGC     Programming Clock
+16  IC4     Ultrasonic Echo
 17  SCL1    I2C Clock for MPU6050
 18  SDA1    I2C Data for MPU6050
 
 
-21  RB10    H-Bridge Steer -
-22  OC2     Steer PWM
-23  RB11    H-Bridge Steer +
+21  RB10    H-Bridge Enable
+22  SDO     H-Bridge Data Output
+23  AN12    Battery Voltage Sense
 24  RB13    UART RX
-25
+25  SCKL    H-Bridge Clock
 26  RB15    UART TX

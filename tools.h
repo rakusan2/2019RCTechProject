@@ -17,6 +17,7 @@
 
 typedef unsigned char unchar;
 typedef unsigned int uint;
+typedef signed long int int32;
 
 int startsWith(unchar *str, uint strLen, unchar *start, uint startLen);
 inline uint joinHL(unchar *data, uint start);
