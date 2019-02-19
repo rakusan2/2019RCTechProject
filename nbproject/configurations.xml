@@ -11,6 +11,8 @@
       <itemPath>MPU6050.h</itemPath>
       <itemPath>SPIHBridge.h</itemPath>
       <itemPath>sonic.h</itemPath>
+      <itemPath>deserializer.h</itemPath>
+      <itemPath>serializer.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -27,6 +29,8 @@
       <itemPath>MPU6050.c</itemPath>
       <itemPath>SPIHBridge.c</itemPath>
       <itemPath>sonic.c</itemPath>
+      <itemPath>deserializer.c</itemPath>
+      <itemPath>serializer.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

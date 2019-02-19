@@ -19,6 +19,8 @@
 #include <sys/attribs.h>
 #include "tools.h"
 #include "MPU6050.h"
+#include "serializer.h"
+#include "deserializer.h"
 
 #define MPU_ADDRESS         0b1101000
 #define MPU_SMPLRT_DIV      0x19
@@ -70,15 +72,40 @@ void mpu_refresh(){
     i2c_getMany(MPU_ADDRESS, MPU_FIFO_COUNT_H, 2, getFIFOLen_ID);
 }
 
+void mpu_serializeAccelData(){
+    se_addStr_("AX=");
+    se_addNum(mpu_data.accelX);
+    se_addStr_(",AY=");
+    se_addNum(mpu_data.accelY);
+    se_addStr_(",AZ=");
+    se_addNum(mpu_data.accelZ);
+}
+void mpu_serializeGyroData(){
+    se_addStr_("GX=");
+    se_addNum(mpu_data.gyroX);
+    se_addStr_(",GY=");
+    se_addNum(mpu_data.gyroY);
+    se_addStr_(",GZ=");
+    se_addNum(mpu_data.gyroZ);
+}
+void mpu_accelDeserializer(unchar *data, uint len){
+    
+}
+void mpu_gyroDeserializer(unchar *data, uint len){
+    
+}
+void mpu_tempDeserializer(unchar *data, uint len){
+    
+}
 void mpu_init(){
     
-    i2c_setOne(MPU_SMPLRT_DIV, 0x4);    // Set sampling Rate to 200Hz
-    i2c_setOne(MPU_CONFIG, 0x1);        // Set Low Pas Filter to about 200Hz
-    i2c_setOne(MPU_GYRO_CONFIG, 2<<3);  // Set Full scale Gyro Range to 1000deg/s
-    i2c_setOne(MPU_ACCEL_CONFIG, 2<<3); // Set Full scale Accel Range to 8g
-    i2c_setOne(MPU_FIFO_EN, 0xf8);      // Send Temp, Gyro XYZ, and Accel XYZ to FIFO
-    i2c_setOne(MPU_USER_CTRL, 0x40);    // Enable FIFO Register
-    i2c_setOne(MPU_PWR_MGMT_1, 1);      // Set clock source to Gyroscope X refference
+    i2c_setOne(MPU_ADDRESS, MPU_SMPLRT_DIV, 0x4);    // Set sampling Rate to 200Hz
+    i2c_setOne(MPU_ADDRESS, MPU_CONFIG, 0x1);        // Set Low Pas Filter to about 200Hz
+    i2c_setOne(MPU_ADDRESS, MPU_GYRO_CONFIG, 2<<3);  // Set Full scale Gyro Range to 1000deg/s
+    i2c_setOne(MPU_ADDRESS, MPU_ACCEL_CONFIG, 2<<3); // Set Full scale Accel Range to 8g
+    i2c_setOne(MPU_ADDRESS, MPU_FIFO_EN, 0xf8);      // Send Temp, Gyro XYZ, and Accel XYZ to FIFO
+    i2c_setOne(MPU_ADDRESS, MPU_USER_CTRL, 0x40);    // Enable FIFO Register
+    i2c_setOne(MPU_ADDRESS, MPU_PWR_MGMT_1, 1);      // Set clock source to Gyroscope X refference
     
     interpretFIFO_ID = i2c_onRecieve(interpretFIFO);
     getFIFOLen_ID = i2c_onRecieve(getFIFOLen);
@@ -86,4 +113,8 @@ void mpu_init(){
     accel.xIndex = accel.yIndex = accel.zIndex = 0;
     gyro.xIndex = gyro.yIndex = gyro.zIndex = 0;
     
+    dese_addDeserializer('A', mpu_accelDeserializer);
+    dese_addDeserializer('G', mpu_gyroDeserializer);
+    dese_addDeserializer('T', mpu_tempDeserializer);
 }
+

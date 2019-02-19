@@ -19,8 +19,9 @@
 #include <xc.h>
 #include <sys/attribs.h>
 #include "tools.h"
+#include "serializer.h"
 
-#define UM_PER_64_CYCLES_X16B 14986   // 343/2 * 1E6 * 64/48E6 * 2E16
+#define MM_PER_64_CYCLES_X16B 14986   // 343/2 * 1000 * 64/48E6 * 2^16
 
 int32 sonic_distStart = 0;
 int32 sonic_dist = 0;
@@ -29,8 +30,8 @@ void __ISR(_INPUT_CAPTURE_4_VECTOR, IPL3SOFT) sonicInt(){
     if(IFS0bits.IC4IF){
         if(IC4CONbits.ICBNE){
             sonic_distStart = IC4BUF;
-            sonic_dist = (IC4BUF - sonic_distStart) * UM_PER_64_CYCLES_X16B;
-            sonic_distStart *= UM_PER_64_CYCLES_X16B;
+            sonic_dist = (IC4BUF - sonic_distStart) * MM_PER_64_CYCLES_X16B;
+            sonic_distStart *= MM_PER_64_CYCLES_X16B;
             sonic_dist >>= 16;
             sonic_distStart >>=16;
         }
@@ -55,4 +56,9 @@ void sonic_init(){
     
     OC1CONSET = 0x8000; // Start Output Compare
     T2CONSET = 0x8000;  // Start Timer 2
+}
+
+void sonic_serializeData(){
+    se_addStr_("U=");
+    se_addNum(sonic_dist);
 }

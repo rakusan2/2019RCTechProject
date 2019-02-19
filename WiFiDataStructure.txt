@@ -4,3 +4,13 @@ byte
 2nd Alter   \   Followed by a single byte
 
 RegExp /([DS]([\-\+]?\d{1,3}|P|N|\\.)?|[AG][XYZ]?|L|U|V)+/
+
+Deserializers 
+D       Drive
+S       Steer
+A       Accelerometer
+G       Gyroscope
+T       Temperature
+L       Limit Switches
+U       Ultrasound Distance
+V       Version

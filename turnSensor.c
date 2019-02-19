@@ -9,8 +9,10 @@
 #include <xc.h>
 #include <sys/attribs.h>
 #include "tools.h"
+#include "serializer.h"
+#include "deserializer.h"
 
-uint lastState=0;
+uint ts_lastState=0;
 
 void switchChange(uint data);
 
@@ -41,6 +43,10 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL4SOFT) PortChangeInt(){
     IFS1CLR=(7<<13);
 }
 
+void ts_deserialize(unchar *data, uint len){
+    se_addStr_("L=");
+    se_addNum(lastState);
+}
 void ts_init(){
     // Due to lines Blue and Green Having 1.6V when ON, Comparator 1 and 2 need to be used
     
@@ -53,4 +59,6 @@ void ts_init(){
     
     TRISBSET = 0xF;
     IEC1bits.CNBIE = 1;
+    
+    dese_addDeserializer('L',ts_deserialize);
 }

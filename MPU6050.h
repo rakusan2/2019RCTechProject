@@ -34,9 +34,9 @@ struct MPUdata{
     uint accelX;
     uint accelY;
     uint accelZ;
-    uint gyroX;
-    uint gyroY;
-    uint gyroZ;
+    int32 gyroX;
+    int32 gyroY;
+    int32 gyroZ;
 } mpu_data;
 
 void mpu_init();

@@ -15,10 +15,12 @@
  */
 /* ************************************************************************** */
 
-#include <xc.h>
-#include <sys/attribs.h>
+#include "wifi.h"
 #include "tools.h"
-#include "serializer.h"
 
-void ts_init();
-void ts_serializeData()
+void se_addStr(unchar *data, uint len);
+void se_addStr_(unchar *data);
+inline void se_addChar(unchar ch);
+void se_addUNum(uint num)
+inline void se_clear();
+inline se_sendToWifi(unchar id);

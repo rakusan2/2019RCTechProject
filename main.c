@@ -45,132 +45,7 @@
 #pragma config BWP = OFF                // Boot Flash Write Protect bit (Protection Disabled)
 #pragma config CP = OFF 
 
-unchar txData[1000];
-uint txLen = 0;
 
-void txDataAdd(unchar *data, uint len) {
-    uint i;
-    for (i = 0; i < len; i++) {
-        txData[txLen] = data[i];
-        txLen++;
-    }
-}
-
-void txDataAdd_(unchar *data) {
-    int i;
-    for (i = 0; data[i] != 0; i++) {
-        txData[txLen] = data[i];
-        txLen++;
-    }
-}
-
-inline uint isMotorSet(unchar c) {
-    return (c >= '0' && c <= '9') || c == '+' || c == '-' || c == 'P' || c == 'N' || c == '\\';
-}
-
-signed int getMotorSet(uint *start, unchar *data) {
-    uint index = *start;
-    unchar c = data[index];
-    if (c == 'P') {
-        *start++;
-        return 0xff;
-    } else if (c == 'N') {
-        *start++;
-        return -0xff;
-    } else if (c == '\\') {
-        *start += 2;
-        uint num = data[index + 1] << 1;
-        return num > 0xff ? num & 0xff : num;
-    } else {
-        uint pos = 0x100;
-        uint num = 0;
-        if (c == '+') {
-            index++;
-            c = data[index];
-        } else if (c == '-') {
-            pos = 0;
-            index++;
-            c = data[index];
-        }
-        uint count = 0;
-        while ((c >= '0' || c <= '9') && count < 3) {
-            count++;
-            num = (num * 10) + c - '0';
-            index++;
-            c = data[index];
-        }
-        *start = index;
-        return pos ? num : -num;
-    }
-}
-
-inline int isMotionSpecifier(unchar c) {
-    return c == 'X' || c == 'Y' || c == 'Z';
-}
-
-void readTCPStart(uint index, unchar *data, uint len) {
-    while (index < len) {
-
-        switch (data[index]) {
-            case 'D':
-                index++;
-                if (isMotorSet(data[index])) {
-                    signed int set = getMotorSet(&index, data);
-
-                }
-                txDataAdd_("D");
-                // Drive instruction
-                break;
-            case 'S':
-                index++;
-                if (isMotorSet(data[index])) {
-                    uint set = getMotorSet(&index, data);
-
-                }
-                txDataAdd_("S");
-                // Steer Instruction
-                break;
-            case 'A':
-                index++;
-                if (isMotionSpecifier(data[index])) {
-
-                    index++;
-                }
-                txDataAdd_("A");
-                // Accelerometer Instruction
-                break;
-            case 'G':
-                index++;
-                if (isMotionSpecifier(data[index])) {
-
-                    index++;
-                }
-                txDataAdd_("G");
-                // Gyro Instruction
-                break;
-            case 'L':
-                index++;
-                txDataAdd_("L");
-                // Limit switches instruction
-                break;
-            case 'U':
-                index++;
-                txDataAdd_("U");
-                // Ultrasound Instruction
-                break;
-            case 'V':
-                index++;
-                txDataAdd_("V=0.1");
-                // Version Instruction
-                break;
-            default:
-                return;
-        }
-        if(index<len){
-            txDataAdd_(",");
-        }
-    }
-}
 
 void wifi_receive(unchar *data, uint len) {
     if (startsWith(data, len, "+IPD", 4)) { // TCP Data is structured as (+IPD,0,n:xxxxxxxxxx)	
@@ -178,9 +53,9 @@ void wifi_receive(unchar *data, uint len) {
         while (data[collon] != ':') {
             collon++;
         }
-        readTCPStart(collon + 1, data, len);
-        wifi_send(txData, txLen, data[5]);
-        txLen=0;
+        dese_readTCPStart(collon + 1, data, len);
+        se_sendToWifi(data[5]);
+        se_clear();
     }
     
     if(data[0] >= '0' && data[0] <= '9' && data[1] == ','){

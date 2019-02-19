@@ -15,10 +15,9 @@
  */
 /* ************************************************************************** */
 
-#include <xc.h>
-#include <sys/attribs.h>
-#include "tools.h"
 #include "serializer.h"
 
-void ts_init();
-void ts_serializeData()
+uint ts_lastState;
+
+void dese_deserialize(unchar *data, uint len);
+void dese_addDeserializer(unchar id, void *func);
