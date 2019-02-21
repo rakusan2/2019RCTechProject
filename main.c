@@ -6,14 +6,17 @@
  */
 
 #include <xc.h>
+#include <sys/attribs.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "wifi.h"
 #include "tools.h"
 #include "sonic.h"
 #include "turnSensor.h"
-//#include "I2CMaster.h"
-//#include "MPU6050.h"
+#include "deserializer.h"
+#include "serializer.h"
+#include "I2CMaster.h"
+#include "MPU6050.h"
 
 // DEVCFG3
 #pragma config USERID = 0xFFFF          // Enter Hexadecimal value (Enter Hexadecimal value)
@@ -49,11 +52,14 @@
 
 void wifi_receive(unchar *data, uint len) {
     if (startsWith(data, len, "+IPD", 4)) { // TCP Data is structured as (+IPD,0,n:xxxxxxxxxx)	
-        uint collon = 7;
+        uint collon = 6;
         while (data[collon] != ':') {
             collon++;
+            if(collon >= len){
+                return;
+            }
         }
-        dese_readTCPStart(collon + 1, data, len);
+        dese_deserialize(data+collon + 1, len-(collon + 1));
         se_sendToWifi(data[5]);
         se_clear();
     }
@@ -62,12 +68,15 @@ void wifi_receive(unchar *data, uint len) {
         _nop();
     }
 }
-
+void _general_exception_handler (unsigned cause, unsigned status){
+    _nop();
+}
 void switchChange(uint data) {
 
 }
 
 void __ISR(_TIMER_1_VECTOR, IPL1SOFT) mainLoop(){
+    mpu_refresh();
     IFS0bits.T1IF=0;
 }
 
@@ -75,8 +84,10 @@ int main(int argc, char** argv) {
     ANSELA = 0; // Disable All Analog pins to be used as digital
     ANSELB = 0;
     INTCONbits.MVEC = 1; // Enable Multi Vector Interrupts
-    asm volatile("ei"); // Enable Interrupts
-
+    
+    __builtin_enable_interrupts();// Enable Interrupts
+    
+    //dese_init();
     wifi_init();
     sonic_init();
     ts_init();

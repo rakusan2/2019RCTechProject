@@ -39,9 +39,13 @@ unchar interpretFIFO_ID;
 unchar getFIFOLen_ID;
 
 struct XYZ accel;
-struct XYZ gyro;
-uint temp[8];
-uint tempIndex = 0;
+struct{
+    int32_t X;
+    int32_t Y;
+    int32_t Z;
+} gyro;
+int16_t temp[8];
+int tempIndex = 0;
 
 
 void interpretFIFO(unchar *data, uint len){
@@ -51,16 +55,13 @@ void interpretFIFO(unchar *data, uint len){
         rotate(accel.X, accel.xIndex, joinHL(data, i + 2));
         rotate(accel.Y, accel.yIndex, joinHL(data, i + 4));
         rotate(accel.Z, accel.zIndex, joinHL(data, i + 6));
-        rotate(gyro.X, gyro.xIndex, joinHL(data, i + 8));
-        rotate(gyro.Y, gyro.yIndex, joinHL(data, i + 10));
-        rotate(gyro.Z, gyro.zIndex, joinHL(data, i + 12));
+        gyro.X += ((int32_t)joinHL(data, i + 8))*5;
+        gyro.Y += ((int32_t)joinHL(data, i + 10))*5;
+        gyro.Z += ((int32_t)joinHL(data, i + 12))*5;
     }
     mpu_data.accelX = average8(accel.X);
     mpu_data.accelY = average8(accel.Y);
     mpu_data.accelZ = average8(accel.Z);
-    mpu_data.gyroX = average8(gyro.X);
-    mpu_data.gyroY = average8(gyro.Y);
-    mpu_data.gyroZ = average8(gyro.Z);
 }
 void getFIFOLen(unchar *data, uint len){
     if(len == 2){
@@ -82,20 +83,49 @@ void mpu_serializeAccelData(){
 }
 void mpu_serializeGyroData(){
     se_addStr_("GX=");
-    se_addNum(mpu_data.gyroX);
+    se_addHLNum(gyro.X, 2);
     se_addStr_(",GY=");
-    se_addNum(mpu_data.gyroY);
+    se_addHLNum(gyro.Y, 2);
     se_addStr_(",GZ=");
-    se_addNum(mpu_data.gyroZ);
+    se_addHLNum(gyro.Z, 2);
 }
 void mpu_accelDeserializer(unchar *data, uint len){
-    
+    if(len>0){
+        unchar ch = data[0];
+        if(ch == 'x'){
+            se_addStr_("AX=");
+            se_addNum(mpu_data.accelX);
+        }else if(ch == 'y'){
+            se_addStr_("AY=");
+            se_addNum(mpu_data.accelY);
+        }else if(ch == 'z'){
+            se_addStr_("AZ=");
+            se_addNum(mpu_data.accelZ);
+        }else mpu_serializeAccelData();
+    }else{
+        mpu_serializeAccelData();
+    }
 }
 void mpu_gyroDeserializer(unchar *data, uint len){
-    
+    if(len>0){
+        unchar ch = data[0];
+        if(ch == 'x'){
+            se_addStr_("GX=");
+            se_addHLNum(gyro.X, 2);
+        }else if(ch == 'y'){
+            se_addStr_("GY=");
+            se_addHLNum(gyro.Y, 2);
+        }else if(ch == 'z'){
+            se_addStr_("GZ=");
+            se_addHLNum(gyro.Z, 2);
+        }else mpu_serializeAccelData();
+    }else{
+        mpu_serializeGyroData();
+    }
 }
 void mpu_tempDeserializer(unchar *data, uint len){
-    
+    se_addStr_("T=");
+    se_addHLNum((((int32_t)mpu_data.temp)*193) + 2394030,2);
 }
 void mpu_init(){
     
@@ -111,7 +141,7 @@ void mpu_init(){
     getFIFOLen_ID = i2c_onRecieve(getFIFOLen);
 
     accel.xIndex = accel.yIndex = accel.zIndex = 0;
-    gyro.xIndex = gyro.yIndex = gyro.zIndex = 0;
+    gyro.X = gyro.Y = gyro.Z = 0;
     
     dese_addDeserializer('A', mpu_accelDeserializer);
     dese_addDeserializer('G', mpu_gyroDeserializer);

@@ -35,8 +35,8 @@ void switchChange(uint data);
 void __ISR(_CHANGE_NOTICE_VECTOR, IPL4SOFT) PortChangeInt(){
     if(IFS1bits.CNBIF){
         uint current = PORTB & 0xF;
-        if(lastState != current){
-            lastState = current;
+        if(ts_lastState != current){
+            ts_lastState = current;
             switchChange(current);
         }
     }
@@ -45,7 +45,7 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL4SOFT) PortChangeInt(){
 
 void ts_deserialize(unchar *data, uint len){
     se_addStr_("L=");
-    se_addNum(lastState);
+    se_addUNum(ts_lastState);
 }
 void ts_init(){
     // Due to lines Blue and Green Having 1.6V when ON, Comparator 1 and 2 need to be used

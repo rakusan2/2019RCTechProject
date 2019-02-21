@@ -66,6 +66,7 @@ void __sendNext() {
  * @param len   Length of received data
  */
 void resumeTX(unchar *data, uint len) {
+    _nop();
     if (startsWith(data, len, "FAIL", 4)) {
         txBufLen = txPointer = 0;
         wifi_receive(data, len);

@@ -19,12 +19,13 @@
 #include <xc.h>
 #include <sys/attribs.h>
 #include "tools.h"
+#include "deserializer.h"
 #include "serializer.h"
 
 #define MM_PER_64_CYCLES_X16B 14986   // 343/2 * 1000 * 64/48E6 * 2^16
 
-int32 sonic_distStart = 0;
-int32 sonic_dist = 0;
+int32_t sonic_distStart = 0;
+int32_t sonic_dist = 0;
 
 void __ISR(_INPUT_CAPTURE_4_VECTOR, IPL3SOFT) sonicInt(){
     if(IFS0bits.IC4IF){
@@ -37,6 +38,11 @@ void __ISR(_INPUT_CAPTURE_4_VECTOR, IPL3SOFT) sonicInt(){
         }
         IFS0bits.IC4IF = 0;
     }
+}
+
+void sonic_serializeData(unchar *data, uint len){
+    se_addStr_("U=");
+    se_addUNum(sonic_dist);
 }
 
 void sonic_init(){
@@ -56,9 +62,5 @@ void sonic_init(){
     
     OC1CONSET = 0x8000; // Start Output Compare
     T2CONSET = 0x8000;  // Start Timer 2
-}
-
-void sonic_serializeData(){
-    se_addStr_("U=");
-    se_addNum(sonic_dist);
+    dese_addDeserializer('U', sonic_serializeData);
 }

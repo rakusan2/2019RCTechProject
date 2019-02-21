@@ -14,10 +14,11 @@
     Describe the purpose of this file.
  */
 /* ************************************************************************** */
+#include <xc.h>
+#include <stdlib.h>
 
 typedef unsigned char unchar;
 typedef unsigned int uint;
-typedef unsigned long int uint16;
 
 int startsWith(unchar *str, uint strLen, unchar *start, uint startLen) {
     if (strLen < startLen)return 0;
@@ -30,12 +31,12 @@ int startsWith(unchar *str, uint strLen, unchar *start, uint startLen) {
     return 1;
 }
 
-inline uint joinHL(unchar *data, uint start){
-    return (data[start]<<8)& data[start+1];
+inline uint16_t joinHL(unchar *data, uint start){
+    return (data[start]<<8) | data[start+1];
 }
 
-uint average8(uint *data){
-    uint16 average=0;
+int16_t average8(int16_t *data){
+    int32_t average=0;
     uint i;
     for(i=0;i<8;i++){
         average+=data[i];

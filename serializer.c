@@ -16,8 +16,8 @@
 /* ************************************************************************** */
 
 #include "wifi.h"
-#include "tools.h"
 #include <stdlib.h>
+#include "tools.h"
 
 unchar se_txData[1000];
 uint se_txLen = 0;
@@ -39,7 +39,7 @@ void se_addStr_(unchar *data) {
 }
 
 inline void se_addChar(unchar ch){
-    txData[se_txLen] = ch;
+    se_txData[se_txLen] = ch;
     se_txLen++;
 }
 
@@ -53,10 +53,45 @@ void se_addUNum(uint num){
     se_addStr_(numStr);
 }
 
+void se_addNum(int num){
+    if(num < 10 && num > -9){
+        if(num < 0){
+            se_addChar('-');
+            num = -num;
+        }
+        se_addChar('0'+num);
+    }else{
+        unchar numStr[8];
+        itoa(numStr, num, 10);
+        se_addStr_(numStr);
+    }
+}
+
+void se_addHLNum(int32_t num, uint max){
+    se_addNum(num>>16);
+    if(num < 0){
+        num=-num;
+    }
+    num &= 0xffff;
+    if(num == 0){
+        return;
+    }
+    se_addChar('.');
+    uint i;
+    for(i=0;i<max;i++){
+        num*=10;
+        se_addChar('0'+(num >> 16));
+        num &= 0xffff;
+        if(num == 0){
+            return;
+        }
+    }
+}
+
 inline void se_clear(){
     se_txLen=0;
 }
 
-inline se_sendToWifi(unchar id){
+inline void se_sendToWifi(unchar id){
     wifi_send(se_txData, se_txLen, id);
 }

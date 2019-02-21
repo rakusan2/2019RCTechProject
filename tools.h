@@ -15,10 +15,11 @@
  */
 /* ************************************************************************** */
 
+#include <xc.h>
+
 typedef unsigned char unchar;
 typedef unsigned int uint;
-typedef signed long int int32;
 
 int startsWith(unchar *str, uint strLen, unchar *start, uint startLen);
 inline uint joinHL(unchar *data, uint start);
-uint average8(uint *data);
+int16_t average8(int16_t *data);

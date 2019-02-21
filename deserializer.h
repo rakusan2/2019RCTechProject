@@ -15,9 +15,8 @@
  */
 /* ************************************************************************** */
 
-#include "serializer.h"
-
 uint ts_lastState;
 
+void dese_init();
 void dese_deserialize(unchar *data, uint len);
 void dese_addDeserializer(unchar id, void *func);

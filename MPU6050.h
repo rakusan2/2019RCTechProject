@@ -15,28 +15,21 @@
  */
 /* ************************************************************************** */
 
-#include <xc.h>
-#include <sys/attribs.h>
-#include "tools.h"
-
 
 struct XYZ{
-    uint X[8];
-    uint Y[8];
-    uint Z[8];
-    uint xIndex;
-    uint yIndex;
-    uint zIndex;
-    
+    int16_t X[8];
+    int16_t Y[8];
+    int16_t Z[8];
+    int16_t xIndex;
+    int16_t yIndex;
+    int16_t zIndex;
 };
 
 struct MPUdata{
-    uint accelX;
-    uint accelY;
-    uint accelZ;
-    int32 gyroX;
-    int32 gyroY;
-    int32 gyroZ;
+    int16_t accelX;
+    int16_t accelY;
+    int16_t accelZ;
+    int16_t temp;
 } mpu_data;
 
 void mpu_init();

@@ -16,9 +16,6 @@
 /* ************************************************************************** */
 
 
-#include <xc.h>
-#include <sys/attribs.h>
-#include "tools.h"
 
 float sonic_distStart;
 float sonic_dist;

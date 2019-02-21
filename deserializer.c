@@ -64,10 +64,16 @@ inline int isMotionSpecifier(unchar c) {
 }
 
 
-void (*defunc[26])(unchar *str, uint len)
+void (*defunc[26])();
 
+void dese_init(){
+    uint i;
+    for(i=0;i<26;i++){
+        defunc[i] = NULL;
+    }
+}
 inline uint isCapital(unchar ch){
-    return ch >= 'A' && ch <= 'Z'
+    return ch >= 'A' && ch <= 'Z';
 }
 uint findEnd(uint index, unchar *data, uint len){
     uint count=0;
@@ -86,12 +92,12 @@ uint findEnd(uint index, unchar *data, uint len){
 
 void dese_deserialize(unchar *data, uint len){
     uint index=0;
-    for(index>= len){
+    while(index< len){
         unchar ch = data[index] - 'A';
         index++;
-        if(ch<26 && defunc[ch] != null){
+        if(ch<26 && defunc[ch]){
             uint commandDataLen = findEnd(index, data, len);
-            defunc[funcI](data+index, commandDataLen);
+            defunc[ch](data+index, commandDataLen);
             index += commandDataLen;
             if(index<len){
                 se_addChar(',');
@@ -99,9 +105,12 @@ void dese_deserialize(unchar *data, uint len){
         }
     }
 }
-
+int count =0;
+int lastSet =0;
 void dese_addDeserializer(unchar id, void *func){
     if(id >= 'A' && id <= 'Z'){
+        count++;
+        lastSet = id - 'A';
         defunc[id - 'A'] = func;
     }
 }
