@@ -21,3 +21,4 @@ float sonic_distStart;
 float sonic_dist;
 
 void sonic_init();
+void sonic_serializeData(unchar *data, uint len);

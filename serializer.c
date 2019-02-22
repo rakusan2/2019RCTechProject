@@ -95,3 +95,8 @@ inline void se_clear(){
 inline void se_sendToWifi(unchar id){
     wifi_send(se_txData, se_txLen, id);
 }
+inline void se_noEmpty(){
+    if(se_txLen==0){
+        se_addStr_("ERROR");
+    }
+}

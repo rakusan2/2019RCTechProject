@@ -60,6 +60,7 @@ void wifi_receive(unchar *data, uint len) {
             }
         }
         dese_deserialize(data+collon + 1, len-(collon + 1));
+        se_noEmpty();
         se_sendToWifi(data[5]);
         se_clear();
     }

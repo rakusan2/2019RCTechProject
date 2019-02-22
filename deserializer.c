@@ -18,6 +18,8 @@
 #include "serializer.h"
 #include "sonic.h"
 #include "turnSensor.h"
+#include "MPU6050.h"
+#include "tools.h"
 
 inline uint isMotorSet(unchar c) {
     return (c >= '0' && c <= '9') || c == '+' || c == '-' || c == 'P' || c == 'N' || c == '\\';
@@ -93,24 +95,49 @@ uint findEnd(uint index, unchar *data, uint len){
 void dese_deserialize(unchar *data, uint len){
     uint index=0;
     while(index< len){
-        unchar ch = data[index] - 'A';
+        unchar ch = data[index];
         index++;
-        if(ch<26 && defunc[ch]){
-            uint commandDataLen = findEnd(index, data, len);
-            defunc[ch](data+index, commandDataLen);
-            index += commandDataLen;
-            if(index<len){
-                se_addChar(',');
-            }
+        uint commandDataLen = findEnd(index, data, len);
+        switch(ch){
+            case 'B':
+                break;
+            case 'U':   // Ultrasound
+                sonic_serializeData(data + index, commandDataLen);
+                break;
+            case 'D':   //Drive
+                break;
+            case 'S':   //Steer
+                break;
+            case 'L':   // Limit Switches
+                ts_deserialize(data + index, commandDataLen);
+                break;
+            case 'A':   // Accelerometer
+                mpu_accelDeserializer(data + index, commandDataLen);
+                break;
+            case 'G':   // Gyroscope
+                mpu_gyroDeserializer(data + index, commandDataLen);
+                break;
+            case 'T':   // Temperature
+                mpu_tempDeserializer(data + index, commandDataLen);
+                break;
+            case 'V':   // Version
+                se_addStr_("0.1");
+                break;
+            default:
+                continue;
+        }
+        index+=commandDataLen;
+        if(index<len){
+            se_addChar(',');
         }
     }
 }
-int count =0;
-int lastSet =0;
-void dese_addDeserializer(unchar id, void *func){
-    if(id >= 'A' && id <= 'Z'){
-        count++;
-        lastSet = id - 'A';
-        defunc[id - 'A'] = func;
-    }
-}
+//int count =0;
+//int lastSet =0;
+//void dese_addDeserializer(unchar id, void *func){
+//    if(id >= 'A' && id <= 'Z'){
+//        count++;
+//        lastSet = id - 'A';
+//        defunc[id - 'A'] = func;
+//    }
+//}

@@ -143,8 +143,5 @@ void mpu_init(){
     accel.xIndex = accel.yIndex = accel.zIndex = 0;
     gyro.X = gyro.Y = gyro.Z = 0;
     
-    dese_addDeserializer('A', mpu_accelDeserializer);
-    dese_addDeserializer('G', mpu_gyroDeserializer);
-    dese_addDeserializer('T', mpu_tempDeserializer);
 }
 

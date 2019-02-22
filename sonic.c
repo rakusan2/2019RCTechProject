@@ -49,18 +49,17 @@ void sonic_init(){
     IC4R = 0b0100;      // Set Echo to Port B7 using IC4
     RPB4R = 0b0101;     // Set Trigger to Port B4 using OC1
     
-    T2CON = 0x0020;     // Set prescaler to 1:64
+    T2CON = 0x0060;     // Set prescaler to 1:64
     PR2 = 45000;        // Set period to 60ms
     
     IC4CON = 0x82A6;    // Timer 2, Int on 2nd capture, rising then every other
     OC1CON = 0x0005;    // Generate pulses on OC1 using Timer 2
-    OC1R = 0;           // Set OC1 High on the start of the timer
-    OC1RS = 8;          // Set OC1 Low after 10us
+    OC1R = 1;           // Set OC1 High on the start of the timer
+    OC1RS = 100;          // Set OC1 Low after 10us
     
     IEC0bits.IC4IE = 1; // Enable IC4 Interrupt
     IPC4bits.IC4IP = 3; // Set Interrupt Priority to 3
     
     OC1CONSET = 0x8000; // Start Output Compare
     T2CONSET = 0x8000;  // Start Timer 2
-    dese_addDeserializer('U', sonic_serializeData);
 }

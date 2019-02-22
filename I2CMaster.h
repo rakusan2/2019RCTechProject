@@ -15,6 +15,8 @@
  */
 /* ************************************************************************** */
 
+#include "tools.h"
+
 void i2c_init();
 unchar i2c_onRecieve(void *func);
 inline void i2c_getOne(unchar addr ,unchar reg, unchar id);

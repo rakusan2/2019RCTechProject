@@ -16,6 +16,7 @@
 /* ************************************************************************** */
 
 #include "tools.h"
+#include <xc.h>
 
 void se_addStr(unchar *data, uint len);
 void se_addStr_(unchar *data);
@@ -25,3 +26,4 @@ void se_addNum(int num);
 void se_addHLNum(int32_t num, uint max);
 inline void se_clear();
 inline void se_sendToWifi(unchar id);
+inline void se_noEmpty();

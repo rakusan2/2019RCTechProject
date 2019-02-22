@@ -60,5 +60,4 @@ void ts_init(){
     TRISBSET = 0xF;
     IEC1bits.CNBIE = 1;
     
-    dese_addDeserializer('L',ts_deserialize);
 }
