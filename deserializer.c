@@ -20,6 +20,7 @@
 #include "turnSensor.h"
 #include "MPU6050.h"
 #include "tools.h"
+#include "battery.h"
 
 inline uint isMotorSet(unchar c) {
     return (c >= '0' && c <= '9') || c == '+' || c == '-' || c == 'P' || c == 'N' || c == '\\';
@@ -100,13 +101,16 @@ void dese_deserialize(unchar *data, uint len){
         uint commandDataLen = findEnd(index, data, len);
         switch(ch){
             case 'B':
+                bat_serialize();
                 break;
             case 'U':   // Ultrasound
                 sonic_serializeData(data + index, commandDataLen);
                 break;
             case 'D':   //Drive
+                se_addStr_("Not Implemented");
                 break;
             case 'S':   //Steer
+                se_addStr_("Not Implemented");
                 break;
             case 'L':   // Limit Switches
                 ts_deserialize(data + index, commandDataLen);
@@ -121,7 +125,7 @@ void dese_deserialize(unchar *data, uint len){
                 mpu_tempDeserializer(data + index, commandDataLen);
                 break;
             case 'V':   // Version
-                se_addStr_("0.1");
+                se_addStr_("V=0.1");
                 break;
             default:
                 continue;

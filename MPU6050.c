@@ -83,11 +83,11 @@ void mpu_serializeAccelData(){
 }
 void mpu_serializeGyroData(){
     se_addStr_("GX=");
-    se_addHLNum(gyro.X, 2);
+    se_add1616Num(gyro.X, 2);
     se_addStr_(",GY=");
-    se_addHLNum(gyro.Y, 2);
+    se_add1616Num(gyro.Y, 2);
     se_addStr_(",GZ=");
-    se_addHLNum(gyro.Z, 2);
+    se_add1616Num(gyro.Z, 2);
 }
 void mpu_accelDeserializer(unchar *data, uint len){
     if(len>0){
@@ -111,13 +111,13 @@ void mpu_gyroDeserializer(unchar *data, uint len){
         unchar ch = data[0];
         if(ch == 'x'){
             se_addStr_("GX=");
-            se_addHLNum(gyro.X, 2);
+            se_add1616Num(gyro.X, 2);
         }else if(ch == 'y'){
             se_addStr_("GY=");
-            se_addHLNum(gyro.Y, 2);
+            se_add1616Num(gyro.Y, 2);
         }else if(ch == 'z'){
             se_addStr_("GZ=");
-            se_addHLNum(gyro.Z, 2);
+            se_add1616Num(gyro.Z, 2);
         }else mpu_serializeAccelData();
     }else{
         mpu_serializeGyroData();
@@ -125,7 +125,7 @@ void mpu_gyroDeserializer(unchar *data, uint len){
 }
 void mpu_tempDeserializer(unchar *data, uint len){
     se_addStr_("T=");
-    se_addHLNum((((int32_t)mpu_data.temp)*193) + 2394030,2);
+    se_add1616Num((((int32_t)mpu_data.temp)*193) + 2394030,2);
 }
 void mpu_init(){
     

@@ -15,6 +15,7 @@
  */
 /* ************************************************************************** */
 
+#include <xc.h>
 #include "wifi.h"
 #include <stdlib.h>
 #include "tools.h"
@@ -54,7 +55,7 @@ void se_addUNum(uint num){
 }
 
 void se_addNum(int num){
-    if(num < 10 && num > -9){
+    if(num < 10 && num > -10){
         if(num < 0){
             se_addChar('-');
             num = -num;
@@ -67,7 +68,7 @@ void se_addNum(int num){
     }
 }
 
-void se_addHLNum(int32_t num, uint max){
+void se_add1616Num(int32_t num, uint max){
     se_addNum(num>>16);
     if(num < 0){
         num=-num;
@@ -82,6 +83,27 @@ void se_addHLNum(int32_t num, uint max){
         num*=10;
         se_addChar('0'+(num >> 16));
         num &= 0xffff;
+        if(num == 0){
+            return;
+        }
+    }
+}
+
+void se_add0824Num(int32_t num, uint max){
+    se_addNum(num>>24);
+    if(num < 0){
+        num=-num;
+    }
+    num &= 0xffffff;
+    if(num == 0){
+        return;
+    }
+    se_addChar('.');
+    uint i;
+    for(i=0;i<max;i++){
+        num*=10;
+        se_addChar('0'+(num >> 24));
+        num &= 0xffffff;
         if(num == 0){
             return;
         }

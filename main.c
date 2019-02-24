@@ -17,6 +17,7 @@
 #include "serializer.h"
 #include "I2CMaster.h"
 #include "MPU6050.h"
+#include "battery.h"
 
 // DEVCFG3
 #pragma config USERID = 0xFFFF          // Enter Hexadecimal value (Enter Hexadecimal value)
@@ -79,13 +80,14 @@ void switchChange(uint data) {
 int startCounter =0;
 
 void __ISR(_TIMER_1_VECTOR, IPL1SOFT) mainLoop(){
-    mpu_refresh();
-    IFS0bits.T1IF=0;
+    //mpu_refresh();
+    bat_convert();
     
     startCounter++;
     if(startCounter == 25){
         wifi_forceStart(); // After 1s try to force start the WiFi
     }
+    
     IFS0bits.T1IF = 0;
 }
 
@@ -100,6 +102,7 @@ int main(int argc, char** argv) {
     wifi_init();
     sonic_init();
     ts_init();
+    bat_init();
     //i2c_init();
     //mpu_init();
     wifi_setSoftAP("Small Device", "pic32mx170f256b");
