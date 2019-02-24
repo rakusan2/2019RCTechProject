@@ -30,7 +30,9 @@ uint rxBufLen = 0;
 uint txPointer = 0;
 uint rxPointer = 0;
 
-int pauseTX = 0;
+int wifi_started = 0;
+
+int pauseTX = 1;
 // Located In Main
 void wifi_receive(unsigned char *data, unsigned int len);
 
@@ -69,6 +71,7 @@ void resumeTX(unchar *data, uint len) {
     _nop();
     if (startsWith(data, len, "FAIL", 4)) {
         txBufLen = txPointer = 0;
+        wifi_started = 1;
         wifi_receive(data, len);
     } else if(len>0 && !startsWith(data,len,"AT",2) && !startsWith(data,len,"busy",4)) {
         pauseTX = 0;
@@ -328,4 +331,12 @@ void wifi_setSoftAP(unchar *ssid, unchar *pwd) {
     txBufAdd_(",");
     txBufAddStr_(pwd);
     txBufAddLn_(",1,3");
+}
+
+void wifi_forceStart(){
+    if(!wifi_started){
+        wifi_started = 1;
+        pauseTX = 0;
+        __sendNext();
+    }
 }

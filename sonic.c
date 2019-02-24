@@ -18,6 +18,7 @@
 
 #include <xc.h>
 #include <sys/attribs.h>
+#include <proc/p32mx170f256b.h>
 #include "tools.h"
 #include "deserializer.h"
 #include "serializer.h"
@@ -35,6 +36,9 @@ void __ISR(_INPUT_CAPTURE_4_VECTOR, IPL3SOFT) sonicInt(){
             sonic_distStart *= MM_PER_64_CYCLES_X16B;
             sonic_dist >>= 16;
             sonic_distStart >>=16;
+        }
+        while(IC4CONbits.ICBNE){
+            IC4BUF;
         }
         IFS0bits.IC4IF = 0;
     }

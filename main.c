@@ -76,9 +76,17 @@ void switchChange(uint data) {
 
 }
 
+int startCounter =0;
+
 void __ISR(_TIMER_1_VECTOR, IPL1SOFT) mainLoop(){
     mpu_refresh();
     IFS0bits.T1IF=0;
+    
+    startCounter++;
+    if(startCounter == 25){
+        wifi_forceStart(); // After 1s try to force start the WiFi
+    }
+    IFS0bits.T1IF = 0;
 }
 
 int main(int argc, char** argv) {
