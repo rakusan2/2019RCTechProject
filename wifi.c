@@ -21,7 +21,7 @@
 
 #define UART1_PRIORITY 7
 #define TXBufSize 2000
-#define RXBufSize 2000
+#define RXBufSize 1000
 
 unchar wifi_txBuf[TXBufSize];
 unchar wifi_rxBuf[RXBufSize];
