@@ -23,3 +23,4 @@ typedef unsigned int uint;
 int startsWith(unchar *str, uint strLen, unchar *start, uint startLen);
 inline uint joinHL(unchar *data, uint start);
 int16_t average8(int16_t *data);
+void cycleDelay(uint cycles);

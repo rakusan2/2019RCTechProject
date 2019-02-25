@@ -21,60 +21,9 @@
 #include "MPU6050.h"
 #include "tools.h"
 #include "battery.h"
-
-inline uint isMotorSet(unchar c) {
-    return (c >= '0' && c <= '9') || c == '+' || c == '-' || c == 'P' || c == 'N' || c == '\\';
-}
-
-signed int getMotorSet(uint *start, unchar *data) {
-    uint index = *start;
-    unchar c = data[index];
-    if (c == 'P') {
-        *start++;
-        return 0xff;
-    } else if (c == 'N') {
-        *start++;
-        return -0xff;
-    } else if (c == '\\') {
-        *start += 2;
-        uint num = data[index + 1] << 1;
-        return num > 0xff ? num & 0xff : num;
-    } else {
-        uint pos = 0x100;
-        uint num = 0;
-        if (c == '+') {
-            index++;
-            c = data[index];
-        } else if (c == '-') {
-            pos = 0;
-            index++;
-            c = data[index];
-        }
-        uint count = 0;
-        while ((c >= '0' || c <= '9') && count < 3) {
-            count++;
-            num = (num * 10) + c - '0';
-            index++;
-            c = data[index];
-        }
-        *start = index;
-        return pos ? num : -num;
-    }
-}
-
-inline int isMotionSpecifier(unchar c) {
-    return c == 'X' || c == 'Y' || c == 'Z';
-}
+#include "SPIHBridge.h"
 
 
-void (*defunc[26])();
-
-void dese_init(){
-    uint i;
-    for(i=0;i<26;i++){
-        defunc[i] = NULL;
-    }
-}
 inline uint isCapital(unchar ch){
     return ch >= 'A' && ch <= 'Z';
 }
@@ -107,10 +56,10 @@ void dese_deserialize(unchar *data, uint len){
                 sonic_serializeData(data + index, commandDataLen);
                 break;
             case 'D':   //Drive
-                se_addStr_("Not Implemented");
+                hb_driveDeserializer(data + index, commandDataLen);
                 break;
             case 'S':   //Steer
-                se_addStr_("Not Implemented");
+                hb_steerDeserializer(data + index, commandDataLen);
                 break;
             case 'L':   // Limit Switches
                 ts_deserialize(data + index, commandDataLen);
@@ -127,6 +76,11 @@ void dese_deserialize(unchar *data, uint len){
             case 'V':   // Version
                 se_addStr_("V=0.1");
                 break;
+            case 'E':
+                se_addStr_("E=\"");
+                se_addStr(data + index, commandDataLen);
+                se_addChar('"');
+                break;
             default:
                 continue;
         }
@@ -136,12 +90,3 @@ void dese_deserialize(unchar *data, uint len){
         }
     }
 }
-//int count =0;
-//int lastSet =0;
-//void dese_addDeserializer(unchar id, void *func){
-//    if(id >= 'A' && id <= 'Z'){
-//        count++;
-//        lastSet = id - 'A';
-//        defunc[id - 'A'] = func;
-//    }
-//}

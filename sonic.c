@@ -28,25 +28,36 @@
 int32_t sonic_distStart = 0;
 int32_t sonic_dist = 0;
 
+inline void clearIC4Buf(){
+    while(IC4CONbits.ICBNE){
+        IC4BUF;
+    }
+}
+
 void __ISR(_INPUT_CAPTURE_4_VECTOR, IPL3SOFT) sonicInt(){
     if(IFS0bits.IC4IF){
         if(IC4CONbits.ICBNE){
             sonic_distStart = IC4BUF;
-            sonic_dist = (IC4BUF - sonic_distStart) * MM_PER_64_CYCLES_X16B;
+            sonic_dist = abs(IC4BUF - sonic_distStart) * MM_PER_64_CYCLES_X16B;
             sonic_distStart *= MM_PER_64_CYCLES_X16B;
             sonic_dist >>= 16;
             sonic_distStart >>=16;
         }
-        while(IC4CONbits.ICBNE){
-            IC4BUF;
-        }
+        clearIC4Buf();
         IFS0bits.IC4IF = 0;
     }
 }
 
 void sonic_serializeData(unchar *data, uint len){
-    se_addStr_("U=");
-    se_addUNum(sonic_dist);
+    if(len >0 ){
+        se_addStr_("Uwidth=");
+        se_addUNum(sonic_dist);
+        se_addStr_(",Ustart=");
+        se_addUNum(sonic_distStart);
+    }else{
+        se_addStr_("U=");
+        se_addUNum(sonic_dist);
+    }
 }
 
 void sonic_init(){
@@ -56,6 +67,8 @@ void sonic_init(){
     T2CON = 0x0060;     // Set prescaler to 1:64
     PR2 = 45000;        // Set period to 60ms
     
+    clearIC4Buf();
+            
     IC4CON = 0x82A6;    // Timer 2, Int on 2nd capture, rising then every other
     OC1CON = 0x0005;    // Generate pulses on OC1 using Timer 2
     OC1R = 1;           // Set OC1 High on the start of the timer

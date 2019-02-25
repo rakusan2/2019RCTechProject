@@ -43,3 +43,11 @@ int16_t average8(int16_t *data){
     }
     return average >> 3;
 }
+
+void cycleDelay(uint cycles){
+    cycles>>=2;
+    uint i;
+    for(i=0;i<cycles;i++){
+        _nop();
+    }
+}

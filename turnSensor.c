@@ -40,6 +40,7 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL4SOFT) PortChangeInt(){
             switchChange(current);
         }
     }
+    CNSTATA = 0;
     IFS1CLR=(7<<13);
 }
 
@@ -58,6 +59,9 @@ void ts_init(){
 //    IPC7bits.CMP2IP=4;
     
     TRISBSET = 0xF;
+    CNENB = 0xF;
+    CNCONBbits.ON = 1;
+    IPC8bits.CNIP = 4;
     IEC1bits.CNBIE = 1;
     
 }

@@ -27,23 +27,25 @@
 void (*receivers[10])();
 uint receiverLen = 0;
 
-uint txBuf[200];
+uint i2c_txBuf[200];
 uint txBufPointer = 0;
 uint txEndPointer = 0;
 uint txPause = 0;
 
-unchar rxBuf[1024];
+unchar i2c_rxBuf[1024];
 uint _rxPointer=0;
 uint rxID=0;
 
 void bufAddByte(uint byte) {
-    txBuf[txEndPointer] = byte;
-    txEndPointer++;
+    if(txEndPointer<200){
+        i2c_txBuf[txEndPointer] = byte;
+        txEndPointer++;
+    }
 }
 
 void __send() {
     if (!txPause && !I2C1STATbits.TRSTAT && txBufPointer < txEndPointer) {
-        uint data = txBuf[txBufPointer];
+        uint data = i2c_txBuf[txBufPointer];
         if (data >= I2C_READ) {
             txPause = 1;
             I2C1CONbits.RCEN = 1;
@@ -65,7 +67,7 @@ void __send() {
                     
                     // Check if received data then send it to the code that requested it
                     if(_rxPointer){
-                        receivers[rxID](rxBuf,_rxPointer);
+                        receivers[rxID](i2c_rxBuf,_rxPointer);
                         _rxPointer=0;
                     }
                     break;
@@ -82,10 +84,10 @@ void __send() {
 void __ISR(_I2C_1_VECTOR, IPL5SOFT) I2CInt() {
     if (I2C1STATbits.RBF) {
         txPause = 0;
-        uint id = txBuf[txBufPointer] & 0xff;
+        uint id = i2c_txBuf[txBufPointer] & 0xff;
         if(id < receiverLen){
             rxID=id;
-            rxBuf[_rxPointer]=I2C1RCV;
+            i2c_rxBuf[_rxPointer]=I2C1RCV;
             _rxPointer++;
         }else {
             volatile int i = I2C1RCV;
@@ -95,6 +97,7 @@ void __ISR(_I2C_1_VECTOR, IPL5SOFT) I2CInt() {
     } else if (!I2C1STATbits.ACKSTAT) {
         __send();
     }
+    IFS1bits.I2C1MIF=0;
 }
 
 inline void startRead(unchar addr) {
@@ -141,11 +144,11 @@ inline void i2c_getOne(unchar addr ,unchar reg, unchar id) {
 }
 
 void i2c_init() {
-    I2C1CON = 0x800;
     //I2C1ADD = 0b1101000;
     I2C1BRG = 58; // Set Baud Rate to 400 kHz
     IPC8bits.I2C1IP = 5;
     IEC1bits.I2C1MIE = 1;
+    I2C1CON = 0x8000;
     
 }
 

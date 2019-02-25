@@ -18,6 +18,7 @@
 #include "I2CMaster.h"
 #include "MPU6050.h"
 #include "battery.h"
+#include "SPIHBridge.h"
 
 // DEVCFG3
 #pragma config USERID = 0xFFFF          // Enter Hexadecimal value (Enter Hexadecimal value)
@@ -80,31 +81,53 @@ void switchChange(uint data) {
 int startCounter =0;
 
 void __ISR(_TIMER_1_VECTOR, IPL1SOFT) mainLoop(){
-    //mpu_refresh();
+    mpu_refresh();
     bat_convert();
     
     startCounter++;
-    if(startCounter == 25){
-        wifi_forceStart(); // After 1s try to force start the WiFi
+    if(startCounter == 50){
+        wifi_forceStart(); // After 2s try to force start the WiFi
     }
     
     IFS0bits.T1IF = 0;
 }
 
+void initMVEC(){
+    unsigned int temp;
+    __builtin_disable_interrupts();
+    temp = _CP0_GET_STATUS(); // Get Status
+    temp |= 0x00400000; // Set BEV bit
+    _CP0_SET_STATUS(temp); // Update Status
+    _CP0_SET_EBASE(0xBD000000); // Set an EBase value of 0xBD000000
+    _CP0_SET_INTCTL(0x00000020); // Set the Vector Spacing to non-zero value
+    temp = _CP0_GET_CAUSE(); // Get Cause
+    temp |= 0x00800000; // Set IV
+    _CP0_SET_CAUSE(temp); // Update Cause
+    temp = _CP0_GET_STATUS(); // Get Status
+    temp &= 0xFFBFFFFD; // Clear BEV and EXL
+    _CP0_SET_STATUS(temp); // Update Status
+    INTCONSET = 0x1000; // Set MVEC bit
+    __builtin_enable_interrupts();
+}
+
 int main(int argc, char** argv) {
     ANSELA = 0; // Disable All Analog pins to be used as digital
     ANSELB = 0;
-    INTCONbits.MVEC = 1; // Enable Multi Vector Interrupts
     
-    __builtin_enable_interrupts();// Enable Interrupts
+    //initMVEC();
+    INTCONSET = 0x1000; // Set MVEC bit
+    __builtin_enable_interrupts();
+    
+    
     
     //dese_init();
     wifi_init();
     sonic_init();
     ts_init();
     bat_init();
-    //i2c_init();
-    //mpu_init();
+    hb_init();
+    i2c_init();
+    mpu_init();
     wifi_setSoftAP("Small Device", "pic32mx170f256b");
     wifi_startTCPServer("8888");
     

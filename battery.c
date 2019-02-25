@@ -56,5 +56,5 @@ void bat_init(){
 
 void bat_serialize(){
     se_addStr_("B=");
-    se_add0824Num(bat_val, 4);
+    se_add0824Num(bat_val, 3);
 }

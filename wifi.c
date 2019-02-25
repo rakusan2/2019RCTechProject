@@ -23,12 +23,13 @@
 #define TXBufSize 2000
 #define RXBufSize 2000
 
-unchar txBuf[TXBufSize];
-unchar rxBuf[RXBufSize];
+unchar wifi_txBuf[TXBufSize];
+unchar wifi_rxBuf[RXBufSize];
 uint txBufLen = 0;
 uint rxBufLen = 0;
 uint txPointer = 0;
 uint rxPointer = 0;
+uint boot =0;
 
 int wifi_started = 0;
 
@@ -46,8 +47,8 @@ void __sendNext() {
         //if (!txPointer) {
         //    PORTBbits.RB5 = 1;
         //}
-        U1TXREG = txBuf[txPointer]; // Add next byte to the buffer
-        if (txBuf[txPointer] == '\n') {
+        U1TXREG = wifi_txBuf[txPointer]; // Add next byte to the buffer
+        if (wifi_txBuf[txPointer] == '\n') {
             pauseTX = 1; // Pause transmission when a new line is sent
         }
         txPointer++;
@@ -68,14 +69,17 @@ void __sendNext() {
  * @param len   Length of received data
  */
 void resumeTX(unchar *data, uint len) {
-    _nop();
     if (startsWith(data, len, "FAIL", 4)) {
         txBufLen = txPointer = 0;
         wifi_started = 1;
         wifi_receive(data, len);
-    } else if(len>0 && !startsWith(data,len,"AT",2) && !startsWith(data,len,"busy",4)) {
+    } else if(len>0 && !startsWith(data,len,"AT",2) && !startsWith(data,len,"busy",4) && boot) {
         pauseTX = 0;
         wifi_receive(data, len);
+        __sendNext();
+    } else if(!boot && startsWith(data, len, "ready", 5)){
+        pauseTX = 0;
+        boot = 1;
         __sendNext();
     }
     //if(startsWith(data,len,"SEND",4) || startsWith(data,len,"OK",2)){
@@ -89,7 +93,7 @@ void resumeTX(unchar *data, uint len) {
  * @param c character to be added
  */
 inline void txBufAddChar(unchar c) {
-    txBuf[txBufLen] = c;
+    wifi_txBuf[txBufLen] = c;
     txBufLen++;
 }
 
@@ -102,7 +106,7 @@ inline void txBufAddChar(unchar c) {
 void txBufAdd(unchar *data, uint len) {
     uint i;
     for (i = 0; i < len; i++) {
-        txBuf[txBufLen + i] = data[i];
+        wifi_txBuf[txBufLen + i] = data[i];
     }
     txBufLen += len;
 }
@@ -115,7 +119,7 @@ void txBufAdd(unchar *data, uint len) {
 void txBufAdd_(unchar *data) {
     uint i = 0;
     while (data[i] != '\0') {
-        txBuf[txBufLen + i] = data[i];
+        wifi_txBuf[txBufLen + i] = data[i];
         i++;
     }
     txBufLen += i;
@@ -199,7 +203,7 @@ void __ISR(_UART_1_VECTOR, IPL7SOFT) UARTInt() {
     if (IFS1bits.U1RXIF) {
         unchar tempChar;
         while (U1STAbits.URXDA) { // While there are data in the receive buffer
-            rxBuf[rxPointer] = tempChar = U1RXREG;
+            wifi_rxBuf[rxPointer] = tempChar = U1RXREG;
             
             if (pauseTX && rxPointer == 0 && tempChar == '>') { // Resume when READY to transmit TCP DATA
                 pauseTX = 0;
@@ -207,8 +211,8 @@ void __ISR(_UART_1_VECTOR, IPL7SOFT) UARTInt() {
             }
 
             // On an IPD response get the number of characters to read
-            if(tempChar == ':' && startsWith(rxBuf, rxPointer, "+IPD", 4)){
-                toRead = getIPDLen(rxBuf, rxPointer);
+            if(tempChar == ':' && startsWith(wifi_rxBuf, rxPointer, "+IPD", 4)){
+                toRead = getIPDLen(wifi_rxBuf, rxPointer);
             }
             if(toRead == 0){ // Stop buffering received data when there is nothing to read
                 tempChar='\n';
@@ -220,7 +224,7 @@ void __ISR(_UART_1_VECTOR, IPL7SOFT) UARTInt() {
 
             // Non IPD responses are new line terminated
             if (tempChar == '\n' && toRead < 0) {
-                resumeTX(rxBuf, rxPointer-1);
+                resumeTX(wifi_rxBuf, rxPointer-1);
                 rxPointer = 0;
                 __sendNext();
             } else {
@@ -336,6 +340,7 @@ void wifi_setSoftAP(unchar *ssid, unchar *pwd) {
 void wifi_forceStart(){
     if(!wifi_started){
         wifi_started = 1;
+        boot = 1;
         pauseTX = 0;
         __sendNext();
     }
