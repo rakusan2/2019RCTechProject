@@ -34,8 +34,10 @@ void hb_setCTRL(uint8_t data){
         return;
     }
     hb_curCTRLState = data;
-    PORTAbits.RA0 = 0;
-    cycleDelay(24);
+    if(!PORTAbits.RA0){
+        PORTAbits.RA0 = 0;
+        cycleDelay(24);
+    }
     SPI1BUF = 0x83;
     SPI1BUF = data;
 }

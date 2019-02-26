@@ -49,7 +49,7 @@ void __ISR(_INPUT_CAPTURE_4_VECTOR, IPL3SOFT) sonicInt(){
                 sonic_distStart = sonic_smallest * MM_PER_64_CYCLES_X16B;
                 sonic_distStart >>=16;                
             }else{
-                int32_t temp = IC4BUF
+                int32_t temp = IC4BUF;
                 sonic_dist = (temp - sonic_smallest) * MM_PER_64_CYCLES_X16B;
                 sonic_smallest = temp;
                 sonic_dist >>= 16;
