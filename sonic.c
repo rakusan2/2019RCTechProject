@@ -30,17 +30,24 @@ int32_t sonic_dist = 0;
 
 int32_t sonic_smallest=0;
 
+/**
+ * Clear the Input Capture buffer
+ */
 inline void clearIC4Buf(){
     while(IC4CONbits.ICBNE){
         IC4BUF;
     }
 }
 
+/**
+ * Reset the smallest value taken by the Input Capture
+ */
 void __ISR(_TIMER_2_VECTOR, IPL3SOFT) sonicTimerInt(){
     sonic_smallest = 0;
     IFS0bits.T2IF = 0;
 }
 
+/**Interpret the input capture DATA*/
 void __ISR(_INPUT_CAPTURE_4_VECTOR, IPL3SOFT) sonicInt(){
     if(IFS0bits.IC4IF){
         if(IC4CONbits.ICBNE){
@@ -49,7 +56,7 @@ void __ISR(_INPUT_CAPTURE_4_VECTOR, IPL3SOFT) sonicInt(){
                 sonic_distStart = sonic_smallest * MM_PER_64_CYCLES_X16B;
                 sonic_distStart >>=16;                
             }else{
-                int32_t temp = IC4BUF
+                int32_t temp = IC4BUF;
                 sonic_dist = (temp - sonic_smallest) * MM_PER_64_CYCLES_X16B;
                 sonic_smallest = temp;
                 sonic_dist >>= 16;
@@ -60,6 +67,11 @@ void __ISR(_INPUT_CAPTURE_4_VECTOR, IPL3SOFT) sonicInt(){
     }
 }
 
+/**
+ * Serialize the Ultrasonic data
+ * @param data  Command Data received
+ * @param len   Length of the command data
+ */
 void sonic_serializeData(unchar *data, uint len){
     if(len >0 ){
         se_addStr_("Uwidth=");
@@ -72,7 +84,12 @@ void sonic_serializeData(unchar *data, uint len){
     }
 }
 
+/**
+ * Initialize the Ultrasonic device
+ */
 void sonic_init(){
+    TRISBbits.TRISB7 = 1;   // Set the Echo pin as input
+    CNPDBbits.CNPDB7 = 1;   // Pull down the ECHO pin
     IC4R = 0b0100;      // Set Echo to Port B7 using IC4
     RPB4R = 0b0101;     // Set Trigger to Port B4 using OC1
     

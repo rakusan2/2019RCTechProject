@@ -33,7 +33,7 @@
 #define MPU_FIFO_COUNT_H    0x72
 #define MPU_FIFO_R_W        0x74
 
-#define rotate(a,b,c) a[b]=c;b=(b+1)&8
+#define rotate(a,b,c) a[b]=c;b=(b+1)&8  // Rotate an 8 value array
 
 unchar interpretFIFO_ID;
 unchar getFIFOLen_ID;
@@ -47,7 +47,11 @@ struct{
 int16_t temp[8];
 int tempIndex = 0;
 
-
+/**
+ * Interpret the data inside the main FIFO Buffer
+ * @param data  Data to interpret
+ * @param len   Length of the data
+ */
 void interpretFIFO(unchar *data, uint len){
     uint i;
     for(i=0;i<len;i+=14){
@@ -63,16 +67,27 @@ void interpretFIFO(unchar *data, uint len){
     mpu_data.accelY = average8(accel.Y);
     mpu_data.accelZ = average8(accel.Z);
 }
+/**
+ * Interpret the Length of the FIFO buffer
+ * @param data  The bytes to interpret
+ * @param len   The length of the bytes to interpret
+ */
 void getFIFOLen(unchar *data, uint len){
     if(len == 2){
         i2c_getMany(MPU_ADDRESS, MPU_FIFO_R_W, joinHL(data, 0), interpretFIFO_ID);
     }
 }
 
+/**
+ * Get the length of the FIFO Buffer
+ */
 void mpu_refresh(){
     i2c_getMany(MPU_ADDRESS, MPU_FIFO_COUNT_H, 2, getFIFOLen_ID);
 }
 
+/**
+ * Serialize the Accelerometer data for transmission
+ */
 void mpu_serializeAccelData(){
     se_addStr_("AX=");
     se_addNum(mpu_data.accelX);
@@ -81,6 +96,9 @@ void mpu_serializeAccelData(){
     se_addStr_(",AZ=");
     se_addNum(mpu_data.accelZ);
 }
+/**
+ * Serialize the Gyroscope data for transmission
+ */
 void mpu_serializeGyroData(){
     se_addStr_("GX=");
     se_add1616Num(gyro.X, 2);
@@ -89,6 +107,12 @@ void mpu_serializeGyroData(){
     se_addStr_(",GZ=");
     se_add1616Num(gyro.Z, 2);
 }
+
+/**
+ * Interpret the User command for the Accelerometer
+ * @param data  The Command data
+ * @param len   The length of the data
+ */
 void mpu_accelDeserializer(unchar *data, uint len){
     if(len>0){
         unchar ch = data[0];
@@ -106,6 +130,12 @@ void mpu_accelDeserializer(unchar *data, uint len){
         mpu_serializeAccelData();
     }
 }
+
+/**
+ * Interpret the User command for the Gyroscope
+ * @param data  The Command data
+ * @param len   The length of the data
+ */
 void mpu_gyroDeserializer(unchar *data, uint len){
     if(len>0){
         unchar ch = data[0];
@@ -123,10 +153,20 @@ void mpu_gyroDeserializer(unchar *data, uint len){
         mpu_serializeGyroData();
     }
 }
+
+/**
+ * Interpret the User command for the Temperature sensor
+ * @param data  The Command data
+ * @param len   The length of the data
+ */
 void mpu_tempDeserializer(unchar *data, uint len){
     se_addStr_("T=");
     se_add1616Num((((int32_t)mpu_data.temp)*193) + 2394030,2);
 }
+
+/**
+ * Initialize the MPU
+ */
 void mpu_init(){
     
     i2c_setOne(MPU_ADDRESS, MPU_SMPLRT_DIV, 0x4);    // Set sampling Rate to 200Hz

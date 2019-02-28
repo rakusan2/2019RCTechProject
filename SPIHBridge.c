@@ -29,6 +29,10 @@ uint8_t hb_steerSpeed = 0;
 uint16_t hb_timerCount = 0;
 uint8_t hb_curCTRLState = 0;
 
+/**
+ * Set the Control register
+ * @param data  The byte to set
+ */
 void hb_setCTRL(uint8_t data){
     if(hb_curCTRLState == data){
         return;

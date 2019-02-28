@@ -36,13 +36,20 @@ unchar i2c_rxBuf[1024];
 uint _rxPointer=0;
 uint rxID=0;
 
+/**
+ * Add a byte the the send buffer
+ * @param byte The byte being added
+ */
 void bufAddByte(uint byte) {
-    if(txEndPointer<200){
+    if(txEndPointer<200){                   // Do not Add if the buffer is filled
         i2c_txBuf[txEndPointer] = byte;
         txEndPointer++;
     }
 }
 
+/**
+ * Send the send buffers contents
+ */
 void __send() {
     if (!txPause && !I2C1STATbits.TRSTAT && txBufPointer < txEndPointer) {
         uint data = i2c_txBuf[txBufPointer];
@@ -52,7 +59,7 @@ void __send() {
             return;
         }
         txBufPointer++;
-        if (data > 0xff) {
+        if (data > 0xff) {  // If it is a command
             switch (data) {
                 case I2C_START:
                     I2C1CONSET = 1 << (txBufPointer > 0 ? 1 : 0);
@@ -72,7 +79,7 @@ void __send() {
                     }
                     break;
             }
-        } else {
+        } else {    // If it is not a command
             I2C1TRN = data;
         }
     }else if(txBufPointer == txEndPointer && txBufPointer > 0 && !I2C1STATbits.TRSTAT){
@@ -81,6 +88,9 @@ void __send() {
     }
 }
 
+/**
+ * The interrupt to receive data
+ */
 void __ISR(_I2C_1_VECTOR, IPL5SOFT) I2CInt() {
     if (I2C1STATbits.RBF) {
         txPause = 0;
@@ -90,7 +100,7 @@ void __ISR(_I2C_1_VECTOR, IPL5SOFT) I2CInt() {
             i2c_rxBuf[_rxPointer]=I2C1RCV;
             _rxPointer++;
         }else {
-            volatile int i = I2C1RCV;
+            I2C1RCV;    //Empty the receive buffer if there is nothing waiting for it
         }
         txBufPointer++;
         __send();
@@ -100,17 +110,33 @@ void __ISR(_I2C_1_VECTOR, IPL5SOFT) I2CInt() {
     IFS1bits.I2C1MIF=0;
 }
 
+/**
+ * Start Reading from the recipient
+ * @param addr  the recipients address
+ */
 inline void startRead(unchar addr) {
     bufAddByte(I2C_START);
     bufAddByte((addr << 1) | 0x1);
 }
 
+/**
+ * Start Writing to the recipient
+ * @param addr  Address of the recipient
+ * @param reg   The register to write to
+ */
 inline void startWrite(unchar addr, unchar reg) {
     bufAddByte(I2C_START);
     bufAddByte(addr<<1);
     bufAddByte(reg);
 }
 
+/**
+ * Set multiple sequential registers
+ * @param addr  Address of the recipient
+ * @param reg   The starting register to write to
+ * @param data  Array of bytes to set
+ * @param count The Length of the array
+ */
 void i2c_setMany(unchar addr ,unchar reg, unchar *data, uint count) {
     startWrite(addr, reg);
     uint i;
@@ -120,12 +146,25 @@ void i2c_setMany(unchar addr ,unchar reg, unchar *data, uint count) {
     __send();
 }
 
+/**
+ * Set a single register
+ * @param addr  Address of the recipient
+ * @param reg   The register to write to
+ * @param data  Byte to set
+ */
 void i2c_setOne(unchar addr ,unchar reg, unchar data) {
     startWrite(addr, reg);
     bufAddByte(data);
     __send();
 }
 
+/**
+ * Get Data from multiple sequential registers
+ * @param addr  Address of the recipient
+ * @param reg   The starting register to read from
+ * @param count The Length of the array
+ * @param id    The ID of the interpreter function
+ */
 void i2c_getMany(unchar addr ,unchar reg, uint count, unchar id) {
     startWrite(addr, reg);
     startRead(addr);
@@ -139,10 +178,19 @@ void i2c_getMany(unchar addr ,unchar reg, uint count, unchar id) {
     __send();
 }
 
+/**
+ * Get Data from a single register
+ * @param addr  Address of the recipient
+ * @param reg   The register to read from
+ * @param id    The ID of the interpreter function
+ */
 inline void i2c_getOne(unchar addr ,unchar reg, unchar id) {
     i2c_getMany(addr, reg, 1, id);
 }
 
+/**
+ * Initialize the I2C
+ */
 void i2c_init() {
     //I2C1ADD = 0b1101000;
     I2C1BRG = 58; // Set Baud Rate to 400 kHz
@@ -152,6 +200,11 @@ void i2c_init() {
     
 }
 
+/**
+ * Register an interpreter
+ * @param func  The interpreter
+ * @return      The ID given to the interpreter
+ */
 unchar i2c_onRecieve(void *func){
     receiverLen++;
     receivers[receiverLen] = func;

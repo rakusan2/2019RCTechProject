@@ -23,17 +23,26 @@
 #include "battery.h"
 #include "SPIHBridge.h"
 
-
+/**
+ * Check whether a character is a capital
+ */
 inline uint isCapital(unchar ch){
     return ch >= 'A' && ch <= 'Z';
 }
+
+/**
+ * Find the Length of a command within a string
+ * @param index The start of the Length count
+ * @param data The string to be checked
+ * @param len The Length of the input string
+ */
 uint findEnd(uint index, unchar *data, uint len){
     uint count=0;
     for(; index < len;index++){
         unchar ch = data[index];
         if(isCapital(ch)){
             return count;
-        }else if(ch == '\\'){
+        }else if(ch == '\\'){   // Skip over an escaped character
             count++;
             index++;
         }
@@ -42,6 +51,11 @@ uint findEnd(uint index, unchar *data, uint len){
     return count;
 }
 
+/**
+ * Seperates a string to individual commands and sends them to their individual deserializers
+ * @param data The string containing commands
+ * @param len the length of the input string
+ */
 void dese_deserialize(unchar *data, uint len){
     uint index=0;
     while(index< len){
@@ -49,7 +63,7 @@ void dese_deserialize(unchar *data, uint len){
         index++;
         uint commandDataLen = findEnd(index, data, len);
         switch(ch){
-            case 'B':
+            case 'B':   // Battery
                 bat_serialize();
                 break;
             case 'U':   // Ultrasound
@@ -76,7 +90,7 @@ void dese_deserialize(unchar *data, uint len){
             case 'V':   // Version
                 se_addStr_("V=0.1");
                 break;
-            case 'E':
+            case 'E':   // Echo
                 se_addStr_("E=\"");
                 se_addStr(data + index, commandDataLen);
                 se_addChar('"');

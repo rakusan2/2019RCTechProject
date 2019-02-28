@@ -24,6 +24,7 @@ inline void se_addChar(unchar ch);
 void se_addUNum(uint num);
 void se_addNum(int num);
 void se_add1616Num(int32_t num, uint max);
+void se_add0824Num(int32_t num, uint max);
 inline void se_clear();
 inline void se_sendToWifi(unchar id);
 inline void se_noEmpty();

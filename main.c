@@ -51,7 +51,11 @@
 #pragma config CP = OFF 
 
 
-
+/**
+ * The interpreter for the Data recieved from the WiFi
+ * @param data  The received bytes
+ * @param len   The Amount of the bytes received
+ */
 void wifi_receive(unchar *data, uint len) {
     if (startsWith(data, len, "+IPD", 4)) { // TCP Data is structured as (+IPD,0,n:xxxxxxxxxx)	
         uint collon = 6;
@@ -71,18 +75,24 @@ void wifi_receive(unchar *data, uint len) {
         _nop();
     }
 }
+
+/**
+ * Exception Handler
+ * @param cause     The CPU Cause register
+ * @param status    The CPU Status Register
+ */
 void _general_exception_handler (unsigned cause, unsigned status){
-    _nop();
-}
-void switchChange(uint data) {
-
+    _nop();     // Something to stop on during DEBUG
 }
 
-int startCounter =0;
+int startCounter = 0;   // Main Loop run count
 
+/**
+ * The Main Loop
+ */
 void __ISR(_TIMER_1_VECTOR, IPL1SOFT) mainLoop(){
-    mpu_refresh();
-    bat_convert();
+    mpu_refresh();  // Refresh the MPU
+    bat_convert();  // Measure the battery voltage
     
     startCounter++;
     if(startCounter == 50){
@@ -91,6 +101,7 @@ void __ISR(_TIMER_1_VECTOR, IPL1SOFT) mainLoop(){
     
     IFS0bits.T1IF = 0;
 }
+
 
 void initMVEC(){
     unsigned int temp;
@@ -110,26 +121,27 @@ void initMVEC(){
     __builtin_enable_interrupts();
 }
 
+/**
+ * The Main function
+ */
 int main(int argc, char** argv) {
     ANSELA = 0; // Disable All Analog pins to be used as digital
     ANSELB = 0;
     
     //initMVEC();
     INTCONSET = 0x1000; // Set MVEC bit
-    __builtin_enable_interrupts();
+    __builtin_enable_interrupts();  // Enable the interrupts
     
-    
-    
-    //dese_init();
-    wifi_init();
+    wifi_init();    
     sonic_init();
     ts_init();
     bat_init();
     hb_init();
     i2c_init();
     mpu_init();
-    wifi_setSoftAP("Small Device", "pic32mx170f256b");
-    wifi_startTCPServer("8888");
+    
+    wifi_setSoftAP("Small Device", "pic32mx170f256b");  //Setup the access point
+    wifi_startTCPServer("8888");    // Start a TCP server on port 8888
     
     T1CON = 0x20;       // Setup Main Loop Timer
     PR1 = 30000;        // Set Main Loop to run at 25Hz

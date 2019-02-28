@@ -337,6 +337,9 @@ void wifi_setSoftAP(unchar *ssid, unchar *pwd) {
     txBufAddLn_(",1,3");
 }
 
+/**
+ * Force start transmission to the WiFi module
+ */
 void wifi_forceStart(){
     if(!wifi_started){
         wifi_started = 1;
