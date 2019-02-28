@@ -50,7 +50,7 @@ uint findEnd(uint index, unchar *data, uint len){
     }
     return count;
 }
-
+int dese_addNL=0;
 /**
  * Seperates a string to individual commands and sends them to their individual deserializers
  * @param data The string containing commands
@@ -95,6 +95,11 @@ void dese_deserialize(unchar *data, uint len){
                 se_addStr(data + index, commandDataLen);
                 se_addChar('"');
                 break;
+            case 'N':
+                dese_addNL=!dese_addNL;
+                se_addStr_("NL=");
+                se_addStr_(dese_addNL?"ON":"OFF");
+                break;
             default:
                 continue;
         }
@@ -102,5 +107,8 @@ void dese_deserialize(unchar *data, uint len){
         if(index<len){
             se_addChar(',');
         }
+    }
+    if(dese_addNL){
+        se_addStr_("\r\n");
     }
 }
