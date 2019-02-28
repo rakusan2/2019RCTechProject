@@ -20,7 +20,7 @@
 #include "tools.h"
 #include "serializer.h"
 
-#define BAT_ADC_TO_VOLT_X24 54067 // 9.22V * (2.88 / 3.33V) * 2^24
+#define BAT_ADC_TO_VOLT_X24 181713  // 9.22V * (2.88 / 3.33V) * 2^24
 
 int32_t bat_val=0;
 
@@ -72,5 +72,5 @@ void bat_init(){
  */
 void bat_serialize(){
     se_addStr_("B=");
-    se_add0824Num(bat_val, 3);
+    se_add0824Num(bat_val, 2);
 }
