@@ -148,7 +148,7 @@ void mpu_gyroDeserializer(unchar *data, uint len){
         }else if(ch == 'z'){
             se_addStr_("GZ=");
             se_add1616Num(gyro.Z, 2);
-        }else mpu_serializeAccelData();
+        }else mpu_serializeGyroData();
     }else{
         mpu_serializeGyroData();
     }

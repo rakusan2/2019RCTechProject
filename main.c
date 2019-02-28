@@ -76,6 +76,10 @@ void wifi_receive(unchar *data, uint len) {
     }
 }
 
+void switchChange(){
+    
+}
+
 /**
  * Exception Handler
  * @param cause     The CPU Cause register
