@@ -14,6 +14,7 @@
       <itemPath>deserializer.h</itemPath>
       <itemPath>serializer.h</itemPath>
       <itemPath>battery.h</itemPath>
+      <itemPath>L298Steer.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -33,6 +34,7 @@
       <itemPath>deserializer.c</itemPath>
       <itemPath>serializer.c</itemPath>
       <itemPath>battery.c</itemPath>
+      <itemPath>L298Steer.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -42,6 +44,7 @@
     <itemPath>Ports.txt</itemPath>
     <itemPath>WiFiDataStructure.txt</itemPath>
     <itemPath>Timers.txt</itemPath>
+    <itemPath>BreakoutPorts.txt</itemPath>
   </logicalFolder>
   <sourceRootList>
     <Elem>.</Elem>

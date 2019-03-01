@@ -21,7 +21,7 @@
 #include "MPU6050.h"
 #include "tools.h"
 #include "battery.h"
-#include "SPIHBridge.h"
+#include "L298Steer.h"
 
 /**
  * Check whether a character is a capital
@@ -70,10 +70,11 @@ void dese_deserialize(unchar *data, uint len){
                 sonic_serializeData(data + index, commandDataLen);
                 break;
             case 'D':   //Drive
-                hb_driveDeserializer(data + index, commandDataLen);
+                //hb_driveDeserializer(data + index, commandDataLen);
+                se_addStr_("D=NotImplemented");
                 break;
             case 'S':   //Steer
-                hb_steerDeserializer(data + index, commandDataLen);
+                steer_deserializer(data + index, commandDataLen);
                 break;
             case 'L':   // Limit Switches
                 ts_deserialize(data + index, commandDataLen);

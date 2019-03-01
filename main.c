@@ -18,7 +18,7 @@
 #include "I2CMaster.h"
 #include "MPU6050.h"
 #include "battery.h"
-#include "SPIHBridge.h"
+#include "L298Steer.h"
 
 // DEVCFG3
 #pragma config USERID = 0xFFFF          // Enter Hexadecimal value (Enter Hexadecimal value)
@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
     sonic_init();
     ts_init();
     bat_init();
-    hb_init();
+    steer_init();
     i2c_init();
     mpu_init();
     

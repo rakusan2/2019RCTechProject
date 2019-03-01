@@ -42,7 +42,7 @@ inline void clearIC4Buf(){
 /**
  * Reset the smallest value taken by the Input Capture
  */
-void __ISR(_TIMER_2_VECTOR, IPL3SOFT) sonicTimerInt(){
+void __ISR(_TIMER_3_VECTOR, IPL3SOFT) sonicTimerInt(){
     sonic_smallest = 0;
     IFS0bits.T2IF = 0;
 }
@@ -93,23 +93,23 @@ void sonic_init(){
     IC4R = 0b0100;      // Set Echo to Port B7 using IC4
     RPB4R = 0b0101;     // Set Trigger to Port B4 using OC1
     
-    T2CON = 0x0060;     // Set prescaler to 1:64
-    PR2 = 45000;        // Set period to 60ms
+    T3CON = 0x0060;     // Set prescaler to 1:64
+    PR3 = 45000;        // Set period to 60ms
     
     clearIC4Buf();
             
     IC4CON = 0x8281;    // Timer 2, Int on 2nd capture, rising then every other
-    OC1CON = 0x0005;    // Generate pulses on OC1 using Timer 2
+    OC1CON = 0x000D;    // Generate pulses on OC1 using Timer 2
     OC1R = 1;           // Set OC1 High on the start of the timer
     OC1RS = 100;          // Set OC1 Low after 10us
     
     IEC0bits.IC4IE = 1; // Enable IC4 Interrupt
     IPC4bits.IC4IP = 3; // Set Interrupt Priority to 3
     
-    IPC2bits.T2IP = 3;
-    IPC2bits.T2IS = 2;
-    IEC0bits.T2IE = 1;
+    IPC3bits.T3IP = 3;
+    IPC3bits.T3IS = 2;
+    IEC0bits.T3IE = 1;
     
     OC1CONSET = 0x8000; // Start Output Compare
-    T2CONSET = 0x8000;  // Start Timer 2
+    T3CONSET = 0x8000;  // Start Timer 2
 }

@@ -1,0 +1,27 @@
+Pin Port    Use
+
+2   RA0     Steer +
+3   RA1     Steer -
+4   RB0->OC3     Steer PWM
+5   C2INA   White Sensor Line
+6   
+7   C1INA   Red Sensor Line
+
+9   
+10  
+11  OC1     Ultrasound Trigger
+12  
+
+14  PGD     Programming Data
+15  PGC     Programming Clock
+16  IC4     Ultrasonic Echo
+17  SCL1    I2C Clock for MPU6050
+18  SDA1    I2C Data for MPU6050
+
+
+21  RB10    Drive +
+22  RB11    Drive -
+23  AN12    Battery Voltage Sense
+24  RB13    UART RX
+25  
+26  RB15    UART TX

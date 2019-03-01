@@ -56,7 +56,7 @@ void __ISR(_SPI_1_VECTOR, IPL6SOFT)spiInt(){
     IFS1bits.SPI1RXIF = 0;
 }
 
-void __ISR(_TIMER_3_VECTOR, IPL6SOFT)hbPWMInt(){
+void __ISR(_TIMER_4_VECTOR, IPL6SOFT)hbPWMInt(){
     uint8_t mask=0xff;
     if(hb_timerCount > hb_driveSpeed){
         mask &= 0xcc;
@@ -92,12 +92,12 @@ void hb_init(){
     IPC7bits.SPI1IP = 6;    // Set interrupt priority to 6
     IEC1bits.SPI1RXIE = 1;  // Enable SPI Receive Interrupt
     
-    T3CON = 0x0060;         // 1:64 Prescaler
+    T4CON = 0x0060;         // 1:64 Prescaler
     PR3 = HB_MIN_TIME;
     
-    IPC3bits.T3IP = 6;
+    IPC4bits.T4IP = 6;
     IPC3bits.INT3IS = 1;
-    IEC0bits.T3IE = 1;
+    IEC0bits.T4IE = 1;
     
     PORTBbits.RB10 = 1; // Enable H-Bridge
     SPI1CONSET=0x8000;  // Enable SPI
@@ -165,15 +165,4 @@ void hb_driveDeserializer(unchar *data, uint len){
         se_addChar('-');
     }
     se_addUNum(hb_driveSpeed);
-}
-
-void hb_steerDeserializer(unchar *data, uint len){
-    if(len>0){
-        hb_setSteer(getMotorSet(data));
-    }
-    se_addStr_("S=");
-    if(hb_onState & 0x8){
-        se_addChar('-');
-    }
-    se_addUNum(hb_steerSpeed);
 }
