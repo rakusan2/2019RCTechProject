@@ -44,6 +44,19 @@ inline void clearIC4Buf(){
  */
 void __ISR(_TIMER_2_VECTOR, IPL3SOFT) sonicTimerInt(){
     sonic_smallest = 0;
+    if(IC4CONbits.ICBNE){
+        sonic_smallest = IC4BUF;
+        if(sonic_smallest < 10 && IC4CONbits.ICBNE){
+            sonic_smallest == IC4BUF;
+        }
+        sonic_distStart = sonic_smallest * MM_PER_64_CYCLES_X16B;
+        sonic_distStart >>=16;  
+        if(IC4CONbits.ICBNE){
+            sonic_dist = (IC4BUF - sonic_smallest) * MM_PER_64_CYCLES_X16B;
+            sonic_dist >>= 16;
+        }
+    }
+    clearIC4Buf();
     IFS0bits.T2IF = 0;
 }
 
@@ -102,10 +115,7 @@ void sonic_init(){
     OC1CON = 0x0005;    // Generate pulses on OC1 using Timer 2
     OC1R = 1;           // Set OC1 High on the start of the timer
     OC1RS = 100;          // Set OC1 Low after 10us
-    
-    IEC0bits.IC4IE = 1; // Enable IC4 Interrupt
-    IPC4bits.IC4IP = 3; // Set Interrupt Priority to 3
-    
+        
     IPC2bits.T2IP = 3;
     IPC2bits.T2IS = 2;
     IEC0bits.T2IE = 1;
