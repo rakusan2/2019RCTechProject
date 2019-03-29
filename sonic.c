@@ -114,7 +114,7 @@ void sonic_init(){
     IC4CON = 0x8281;    // Timer 2, Int on 2nd capture, rising then every other
     OC1CON = 0x0005;    // Generate pulses on OC1 using Timer 2
     OC1R = 1;           // Set OC1 High on the start of the timer
-    OC1RS = 100;          // Set OC1 Low after 10us
+    OC1RS = 10;          // Set OC1 Low after 10us
         
     IPC2bits.T2IP = 3;
     IPC2bits.T2IS = 2;

@@ -84,7 +84,7 @@ void hb_init(){
     
     PORTAbits.RA0 = 1;      // Set SS pin to deselect H-Bridge
     
-    SPI1CON = 0x0000042D;
+    SPI1CON = 0x620;
     SPI1CON2 = 0;
     //SPI1BRG = 4;    // Set SCK Baud rate to 4.8 MHz
     SPI1BRG = 20;
