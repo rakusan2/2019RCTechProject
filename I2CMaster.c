@@ -32,7 +32,7 @@ uint txBufPointer = 0;
 uint txEndPointer = 0;
 uint txPause = 0;
 
-unchar i2c_rxBuf[1024];
+unchar i2c_rxBuf[256];
 uint _rxPointer=0;
 uint rxID=0;
 

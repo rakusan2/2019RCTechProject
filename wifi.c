@@ -20,8 +20,8 @@
 #include "tools.h"
 
 #define UART1_PRIORITY 7
-#define TXBufSize 2000
-#define RXBufSize 1000
+#define TXBufSize 512
+#define RXBufSize 512
 
 unchar wifi_txBuf[TXBufSize];
 unchar wifi_rxBuf[RXBufSize];

@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include "tools.h"
 
-unchar se_txData[1000];
+unchar se_txData[256];
 uint se_txLen = 0;
 
 /**
