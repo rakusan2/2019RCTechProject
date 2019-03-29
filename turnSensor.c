@@ -19,7 +19,7 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL4SOFT) PortChangeInt(){
     if(IFS1bits.CNBIF){
         uint current = PORTB & 0xA;
         uint changed = ts_lastState ^ current;
-        if(changed){
+        if(changed>0){
             if(changed & current & 2){  // 2nd bit (White Line) went high
                 steer_trigEnd();
             }

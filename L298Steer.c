@@ -37,6 +37,8 @@ void steer_setCurSpeed(int speed){
     if(speed < 0){
         PORTA = (PORTA & 0xfffc) | 0x2;
         speed = -speed;
+    }else if(speed == 0){
+        PORTACLR = 3;
     }else{
         PORTA = (PORTA & 0xfffc) | 0x1;
     }
@@ -79,6 +81,7 @@ void steer_setNegLimit(int speed){
 
 void steer_trigEnd(){
     steer_setCurSpeed(0);
+    steer_speed = 0;
 }
 void steer_trigCenter(){
     if(steer_aim != 0){
@@ -112,7 +115,7 @@ void steer_deserializer(unchar *data, uint len){
             }
             steer_aim = 0;
         }
-        if(len>0){
+        if(len>0){                                                                                                                                                                                    
             steer_set(getMotorSet(data));
         }
     }

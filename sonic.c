@@ -44,7 +44,7 @@ inline void clearIC4Buf(){
  */
 void __ISR(_TIMER_3_VECTOR, IPL3SOFT) sonicTimerInt(){
     sonic_smallest = 0;
-    IFS0bits.T2IF = 0;
+    IFS0bits.T3IF = 0;
 }
 
 /**Interpret the input capture DATA*/
