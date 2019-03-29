@@ -21,13 +21,13 @@
 #include "serializer.h"
 #include "SPIHBridge.h"
 
-#define OC4R_PER_BIT 2
+#define OC3R_PER_BIT 2
 
 int steer_speed = 0;
 int steer_curSpeed =0;
 
-int steer_posLimit = 256;
-int steer_negLimit = -256;
+int steer_posLimit = 255;
+int steer_negLimit = -255;
 
 int steer_rate = 0x2;
 int steer_aim =0;
@@ -42,17 +42,11 @@ void steer_setCurSpeed(int speed){
     }else{
         PORTA = (PORTA & 0xfffc) | 0x1;
     }
-    if(speed == 0 || speed >= 0xff){
-        OC4CONCLR = 0x8000;
-        PORTBbits.RB0 = (speed != 0);
-    }else{
-        OC4CONSET = 0x8000;
-        OC4R = speed * OC4R_PER_BIT;
-    }
+    OC3RS = speed * OC3R_PER_BIT;
 }
 
 void steer_set(int speed){
-    steer_speed = max(min(speed,256),-256);
+    steer_speed = max(min(speed,255),-255);
 }
 
 void __ISR(_TIMER_2_VECTOR, IPL6SOFT) PWMInt(){
@@ -66,14 +60,14 @@ void __ISR(_TIMER_2_VECTOR, IPL6SOFT) PWMInt(){
 }
 
 void steer_setPosLimit(int speed){
-    steer_posLimit = max(min(speed,256),0);
+    steer_posLimit = max(min(speed,255),0);
     if(steer_curSpeed > steer_posLimit){
         steer_setCurSpeed(steer_posLimit);
     }
 }
 
 void steer_setNegLimit(int speed){
-    steer_negLimit = max(min(speed,0),-256);
+    steer_negLimit = max(min(speed,0),-255);
     if(steer_curSpeed < steer_negLimit){
         steer_setCurSpeed(steer_negLimit);
     }
@@ -133,12 +127,13 @@ void steer_init(){
     
     PR2 = 512;
     T2CON = 0x8060;
+    OC3CONSET = 0x8000;
     
     IPC2bits.T2IP = 6;
     IPC2bits.T2IS = 2;
     IEC0bits.T2IE = 1;
     
-    steer_set(0);
+    steer_setCurSpeed(0);
 }
 
 // PR2 = 0x7f
