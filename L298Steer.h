@@ -18,3 +18,7 @@
 void steer_deserializer(unchar *data, uint len);
 void steer_set(int speed);
 void steer_init();
+void steer_setPosLimit(int speed);
+void steer_setNegLimit(int speed);
+void steer_trigEnd();
+void steer_trigCenter();

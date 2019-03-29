@@ -11,33 +11,22 @@
 #include "tools.h"
 #include "serializer.h"
 #include "deserializer.h"
+#include "L298Steer.h"
 
 uint ts_lastState=0;
 
-void switchChange(uint data);
-
-//void inputChange(){
-//    uint current = (CMSTAT & 0x3) + ((PORTB & 0x5)>>2);
-//    if(lastState != current){
-//        lastState = current;
-//        switchChange(current);
-//    }
-//}
-
-//void __ISR(_COMPARATOR_1_VECTOR, IPL4SOFT) COMP1Int(){
-//    inputChange();
-//    IFS1bits.CMP1IF=0;
-//}
-//void __ISR(_COMPARATOR_2_VECTOR, IPL4SOFT) COMP2Int(){
-//    inputChange();
-//    IFS1bits.CMP2IF=0;
-//}
 void __ISR(_CHANGE_NOTICE_VECTOR, IPL4SOFT) PortChangeInt(){
     if(IFS1bits.CNBIF){
-        uint current = PORTB & 0xF;
-        if(ts_lastState != current){
+        uint current = PORTB & 0xA;
+        uint changed = ts_lastState ^ current;
+        if(changed){
+            if(changed & current & 2){  // 2nd bit (White Line) went high
+                steer_trigEnd();
+            }
+            if(changed & ts_lastState & 8){ // 4th bit (Red Line) went low
+                steer_trigCenter();
+            }
             ts_lastState = current;
-            switchChange(current);
         }
     }
     CNSTATA = 0;
@@ -49,17 +38,10 @@ void ts_deserialize(unchar *data, uint len){
     se_addUNum(ts_lastState);
 }
 void ts_init(){
-    // Due to lines Blue and Green Having 1.6V when ON, Comparator 1 and 2 need to be used
     
-//    CM1CON = 0x8053;
-//    CM2CON = 0x8053;
-//    IEC1bits.CMP1IE=1;
-//    IEC1bits.CMP2IE=1;
-//    IPC6bits.CMP1IP=4;
-//    IPC7bits.CMP2IP=4;
-    
-    TRISBSET = 0xF;
-    CNENB = 0xF;
+    TRISBSET = 0xA;
+    CNENB = 0xA;
+    CNPDBSET = 0xA;
     CNCONBbits.ON = 1;
     IPC8bits.CNIP = 4;
     IEC1bits.CNBIE = 1;

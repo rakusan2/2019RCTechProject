@@ -20,7 +20,7 @@
 #include "tools.h"
 #include "serializer.h"
 
-#define BAT_ADC_TO_VOLT_X24 181713  // 9.22V * (2.88 / 3.33V) * 2^24
+#define BAT_ADC_TO_VOLT_X24 178854  // (9.218V / 2.791V) * (3.302V / 2^10bit) * 2^24
 
 int32_t bat_val=0;
 
