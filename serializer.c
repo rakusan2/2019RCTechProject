@@ -154,7 +154,7 @@ inline void se_clear(){
  */
 inline void se_sendToWifi(unchar id){
     unchar userID = (id >= '0' ? id - '0' : id);
-    if(userID > 4){
+    if(userID > 4 || !users[userID].connected){
         return;
     }
     if(users[userID].nl){

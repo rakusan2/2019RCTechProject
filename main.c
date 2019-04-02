@@ -19,6 +19,7 @@
 #include "MPU6050.h"
 #include "battery.h"
 #include "L298Steer.h"
+#include "User.h"
 
 
 // USERID = No Setting
@@ -50,12 +51,6 @@
 #pragma config BWP = OFF                // Boot Flash Write Protect bit (Protection Disabled)
 #pragma config CP = OFF   
 
-struct USER{
-    unchar connected;
-    unchar nl;
-    unchar *repeatCMD;
-    unchar repeatTime;
-} users[5];
 
 /**
  * The interpreter for the Data recieved from the WiFi
@@ -82,12 +77,9 @@ void wifi_receive(unchar *data, uint len) {
     unchar isID = isBetween('0',firctCh, '4');
     
     if(isID && startsWith(data + 1,len, ",CON",4)){
-        users[firstCh - '0'].connected = 1;
+        user_connect(firstCh - '0');
     }else if(isID && startsWith(data + 1,len, ",DIS",4)){
-        users[firstCh - '0'].connected = 0;
-    }
-    if(data[0] >= '0' && data[0] <= '9' && data[1] == ','){
-        _nop();
+        user_disconnect(firstCh - '0');
     }
 }
 
@@ -114,6 +106,8 @@ void __ISR(_TIMER_1_VECTOR, IPL1SOFT) mainLoop(){
     if(startCounter == 50){
         wifi_forceStart(); // After 2s try to force start the WiFi
     }
+    
+    user_doRepeat(startCounter);
     
     IFS0bits.T1IF = 0;
 }

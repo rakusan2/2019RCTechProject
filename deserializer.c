@@ -22,6 +22,7 @@
 #include "tools.h"
 #include "battery.h"
 #include "L298Steer.h"
+#include "User.h"
 
 /**
  * Check whether a character is a capital
@@ -38,12 +39,12 @@ inline uint isCapital(unchar ch){
  */
 uint findEnd(uint index, unchar *data, uint len){
     uint count=0;
-    unchar comma=0;
+    unchar quote=0;
     for(; index < len;index++){
         unchar ch = data[index];
         if(ch == '"'){
-            comma = !comma;
-        }else if(isCapital(ch) && !comma){
+            quote = !quote;
+        }else if(isCapital(ch) && !quote){
             return count;
         }else if(ch == '\\'){   // Skip over an escaped character
             count++;
@@ -54,15 +55,16 @@ uint findEnd(uint index, unchar *data, uint len){
     return count;
 }
 
-unchar newLine=0;
 
 /**
  * Seperates a string to individual commands and sends them to their individual deserializers
+ * @param userID The ID of the user requesting the data
  * @param data The string containing commands
  * @param len the length of the input string
  */
-void dese_deserialize(unchar user, unchar *data, uint len){
+void dese_deserialize(unchar userID, unchar *data, uint len){
     uint index=0;
+    USER user = users[userID];
     while(index< len){
         unchar ch = data[index];
         index++;
@@ -102,11 +104,12 @@ void dese_deserialize(unchar user, unchar *data, uint len){
                 se_addChar('"');
                 break;
             case 'N':   // New Line
-                users[user].nl = !users[user].nl;
+                user.nl = !user.nl;
                 se_addStr_("N=");
-                se_addUNum(newLine);
+                se_addUNum(user.nl);
                 break;
             case 'R':   // Repeat
+                user_deseRepeat(userID, data + index, commandDataLen);
                 break;
             default:
                 se_addChar(ch);

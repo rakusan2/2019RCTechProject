@@ -16,6 +16,7 @@
       <itemPath>battery.h</itemPath>
       <itemPath>L298Steer.h</itemPath>
       <itemPath>L298Drive.h</itemPath>
+      <itemPath>User.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -37,6 +38,7 @@
       <itemPath>battery.c</itemPath>
       <itemPath>L298Steer.c</itemPath>
       <itemPath>L298Drive.c</itemPath>
+      <itemPath>User.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
