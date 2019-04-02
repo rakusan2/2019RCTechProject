@@ -50,6 +50,12 @@
 #pragma config BWP = OFF                // Boot Flash Write Protect bit (Protection Disabled)
 #pragma config CP = OFF   
 
+struct USER{
+    unchar connected;
+    unchar nl;
+    unchar *repeatCMD;
+    unchar repeatTime;
+} users[5];
 
 /**
  * The interpreter for the Data recieved from the WiFi
@@ -58,6 +64,7 @@
  */
 void wifi_receive(unchar *data, uint len) {
     if (startsWith(data, len, "+IPD", 4)) { // TCP Data is structured as (+IPD,0,n:xxxxxxxxxx)	
+        unchar userID = data[5] - '0';
         uint collon = 6;
         while (data[collon] != ':') {
             collon++;
@@ -65,12 +72,20 @@ void wifi_receive(unchar *data, uint len) {
                 return;
             }
         }
-        dese_deserialize(data+collon + 1, len-(collon + 1));
+        dese_deserialize(userID ,data + collon + 1, len - (collon + 1));
         se_noEmpty();
-        se_sendToWifi(data[5]);
+        se_sendToWifi(userID);
         se_clear();
     }
     
+    unchar firstCh = data[0];
+    unchar isID = isBetween('0',firctCh, '4');
+    
+    if(isID && startsWith(data + 1,len, ",CON",4)){
+        users[firstCh - '0'].connected = 1;
+    }else if(isID && startsWith(data + 1,len, ",DIS",4)){
+        users[firstCh - '0'].connected = 0;
+    }
     if(data[0] >= '0' && data[0] <= '9' && data[1] == ','){
         _nop();
     }
@@ -101,25 +116,6 @@ void __ISR(_TIMER_1_VECTOR, IPL1SOFT) mainLoop(){
     }
     
     IFS0bits.T1IF = 0;
-}
-
-
-void initMVEC(){
-    unsigned int temp;
-    __builtin_disable_interrupts();
-    temp = _CP0_GET_STATUS(); // Get Status
-    temp |= 0x00400000; // Set BEV bit
-    _CP0_SET_STATUS(temp); // Update Status
-    _CP0_SET_EBASE(0xBD000000); // Set an EBase value of 0xBD000000
-    _CP0_SET_INTCTL(0x00000020); // Set the Vector Spacing to non-zero value
-    temp = _CP0_GET_CAUSE(); // Get Cause
-    temp |= 0x00800000; // Set IV
-    _CP0_SET_CAUSE(temp); // Update Cause
-    temp = _CP0_GET_STATUS(); // Get Status
-    temp &= 0xFFBFFFFD; // Clear BEV and EXL
-    _CP0_SET_STATUS(temp); // Update Status
-    INTCONSET = 0x1000; // Set MVEC bit
-    __builtin_enable_interrupts();
 }
 
 /**

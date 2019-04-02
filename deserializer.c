@@ -38,9 +38,12 @@ inline uint isCapital(unchar ch){
  */
 uint findEnd(uint index, unchar *data, uint len){
     uint count=0;
+    unchar comma=0;
     for(; index < len;index++){
         unchar ch = data[index];
-        if(isCapital(ch)){
+        if(ch == '"'){
+            comma = !comma;
+        }else if(isCapital(ch) && !comma){
             return count;
         }else if(ch == '\\'){   // Skip over an escaped character
             count++;
@@ -58,7 +61,7 @@ unchar newLine=0;
  * @param data The string containing commands
  * @param len the length of the input string
  */
-void dese_deserialize(unchar *data, uint len){
+void dese_deserialize(unchar user, unchar *data, uint len){
     uint index=0;
     while(index< len){
         unchar ch = data[index];
@@ -98,20 +101,21 @@ void dese_deserialize(unchar *data, uint len){
                 se_addStr(data + index, commandDataLen);
                 se_addChar('"');
                 break;
-            case 'N':
-                newLine=!newLine;
+            case 'N':   // New Line
+                users[user].nl = !users[user].nl;
                 se_addStr_("N=");
                 se_addUNum(newLine);
                 break;
+            case 'R':   // Repeat
+                break;
             default:
+                se_addChar(ch);
+                se_addStr_("=NotImplemented");
                 continue;
         }
         index+=commandDataLen;
         if(index<len){
             se_addChar(',');
         }
-    }
-    if(newLine){
-        se_addStr_("\r\n");
     }
 }

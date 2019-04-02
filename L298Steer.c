@@ -46,28 +46,26 @@ void steer_setCurSpeed(int speed){
 }
 
 void steer_set(int speed){
-    steer_speed = max(min(speed,255),-255);
+    steer_speed = bind(-255, speed, 255);
 }
 
 void __ISR(_TIMER_2_VECTOR, IPL6SOFT) PWMInt(){
-    if(steer_speed != steer_curSpeed){
-        if(steer_speed > steer_negLimit && steer_curSpeed < steer_posLimit){
-            int speed = steer_curSpeed + (steer_curSpeed < steer_speed ? steer_rate : -steer_rate);
-            steer_setCurSpeed(max(min(speed,steer_posLimit),steer_negLimit));
-        }
+    if(steer_speed != steer_curSpeed && isBetween(steer_negLimit, steer_curSpeed, steer_posLimit)){
+        int speed = steer_curSpeed + (steer_curSpeed < steer_speed ? steer_rate : -steer_rate);
+        steer_setCurSpeed(bind(steer_negLimit, speed, steer_posLimit));
     }
     IFS0bits.T2IF = 0;
 }
 
 void steer_setPosLimit(int speed){
-    steer_posLimit = max(min(speed,255),0);
+    steer_posLimit = bind(0, speed, 255);
     if(steer_curSpeed > steer_posLimit){
         steer_setCurSpeed(steer_posLimit);
     }
 }
 
 void steer_setNegLimit(int speed){
-    steer_negLimit = max(min(speed,0),-255);
+    steer_negLimit = bind(-255, speed, 0);
     if(steer_curSpeed < steer_negLimit){
         steer_setCurSpeed(steer_negLimit);
     }

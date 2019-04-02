@@ -149,11 +149,18 @@ inline void se_clear(){
 }
 
 /**
- * The the serializer data to a TCP client
- * @param id the ID of the client
+ * Send the serializer data to a specified TCP client
+ * @param id The ID of the client
  */
 inline void se_sendToWifi(unchar id){
-    wifi_send(se_txData, se_txLen, id);
+    unchar userID = (id >= '0' ? id - '0' : id);
+    if(userID > 4){
+        return;
+    }
+    if(users[userID].nl){
+        se_addStr_("\r\n");
+    }
+    wifi_send(se_txData, se_txLen, userID + '0');
 }
 
 /**
