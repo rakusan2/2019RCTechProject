@@ -74,7 +74,7 @@ void wifi_receive(unchar *data, uint len) {
     }
     
     unchar firstCh = data[0];
-    unchar isID = isBetween('0',firctCh, '4');
+    unchar isID = isBetween('0',firstCh, '4');
     
     if(isID && startsWith(data + 1,len, ",CON",4)){
         user_connect(firstCh - '0');

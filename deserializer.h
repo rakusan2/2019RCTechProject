@@ -18,4 +18,4 @@
 uint ts_lastState;
 
 void dese_init();
-void dese_deserialize(unchar *data, uint len);
+void dese_deserialize(unchar userID, unchar *data, uint len);

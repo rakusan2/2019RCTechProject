@@ -64,7 +64,7 @@ uint findEnd(uint index, unchar *data, uint len){
  */
 void dese_deserialize(unchar userID, unchar *data, uint len){
     uint index=0;
-    USER user = users[userID];
+    struct USER user = users[userID];
     while(index< len){
         unchar ch = data[index];
         index++;

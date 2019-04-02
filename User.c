@@ -27,7 +27,7 @@ void user_connect(unchar id){
 }
 
 void user_disconnect(unchar id){
-        USER user = users[id];
+        struct USER user = users[id];
         user.connected = 0;
         user.nl = 0;
         user.repeatTime = 0;
@@ -35,7 +35,7 @@ void user_disconnect(unchar id){
 }
 
 void user_deseRepeat(unchar userID, unchar *data, uint len){
-    USER user = users[userID];
+    struct USER user = users[userID];
     unchar quote = 0;
     uint i;
     for(i = 0; i < len; i++){
@@ -54,7 +54,7 @@ void user_deseRepeat(unchar userID, unchar *data, uint len){
 void user_doRepeat(uint time){
     uint i;
     for(i = 0; i < 5; i++){
-        USER user = users[i];
+        struct USER user = users[i];
         if(user.connected && user.repeatCMDLen > 0 && user.repeatTime > 0 && time % user.repeatTime == 0){
             dese_deserialize(i, user.repeatCMD, user.repeatCMDLen);
         }

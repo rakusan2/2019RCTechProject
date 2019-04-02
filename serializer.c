@@ -19,6 +19,7 @@
 #include "wifi.h"
 #include <stdlib.h>
 #include "tools.h"
+#include "User.h"
 
 unchar se_txData[256];
 uint se_txLen = 0;
