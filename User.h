@@ -10,7 +10,7 @@
 struct USER{
     unchar connected;
     unchar nl;
-    unchar *repeatCMD;
+    unchar repeatCMD[20];
     uint repeatCMDLen;
     unchar repeatTime;
 } users[5];

@@ -64,7 +64,6 @@ uint findEnd(uint index, unchar *data, uint len){
  */
 void dese_deserialize(unchar userID, unchar *data, uint len){
     uint index=0;
-    struct USER user = users[userID];
     while(index< len){
         unchar ch = data[index];
         index++;
@@ -104,12 +103,18 @@ void dese_deserialize(unchar userID, unchar *data, uint len){
                 se_addChar('"');
                 break;
             case 'N':   // New Line
-                user.nl = !user.nl;
+                users[userID].nl = !users[userID].nl;
                 se_addStr_("N=");
-                se_addUNum(user.nl);
+                se_addUNum(users[userID].nl);
                 break;
             case 'R':   // Repeat
-                user_deseRepeat(userID, data + index, commandDataLen);
+                if(commandDataLen > 0){
+                    user_deseRepeat(userID, data + index, commandDataLen);
+                }
+                se_addStr_("R=\"");
+                se_addStr(users[userID].repeatCMD, users[userID].repeatCMDLen);
+                se_addStr_("\",Rtime=");
+                se_addUNum(users[userID].repeatTime);
                 break;
             default:
                 se_addChar(ch);

@@ -27,26 +27,26 @@ void user_connect(unchar id){
 }
 
 void user_disconnect(unchar id){
-        struct USER user = users[id];
-        user.connected = 0;
-        user.nl = 0;
-        user.repeatTime = 0;
-        user.repeatCMDLen = 0;
+        users[id].connected = 0;
+        users[id].nl = 0;
+        users[id].repeatTime = 0;
+        users[id].repeatCMDLen = 0;
 }
 
 void user_deseRepeat(unchar userID, unchar *data, uint len){
-    struct USER user = users[userID];
     unchar quote = 0;
     uint i;
+    users[userID].repeatCMDLen = 0;
+    users[userID].repeatTime = 0;
     for(i = 0; i < len; i++){
         unchar ch = data[i];
         if(ch == '"'){
             quote = !quote;
         }else if(!quote && isBetween('0', ch, '9')){
-            user.repeatTime = (user.repeatTime * 10) + (ch - '0');
+            users[userID].repeatTime = (users[userID].repeatTime * 10) + (ch - '0');
         }else if(quote){
-            user.repeatCMD[user.repeatCMDLen] = ch;
-            user.repeatCMDLen++;
+            users[userID].repeatCMD[users[userID].repeatCMDLen] = ch;
+            users[userID].repeatCMDLen++;
         }
     }
 }
@@ -54,9 +54,11 @@ void user_deseRepeat(unchar userID, unchar *data, uint len){
 void user_doRepeat(uint time){
     uint i;
     for(i = 0; i < 5; i++){
-        struct USER user = users[i];
-        if(user.connected && user.repeatCMDLen > 0 && user.repeatTime > 0 && time % user.repeatTime == 0){
-            dese_deserialize(i, user.repeatCMD, user.repeatCMDLen);
+        if(users[i].connected && users[i].repeatCMDLen > 0 && users[i].repeatTime > 0 && time % users[i].repeatTime == 0){
+            dese_deserialize(i, users[i].repeatCMD, users[i].repeatCMDLen);
+            se_noEmpty();
+            se_sendToWifi(i);
+            se_clear();
         }
     }
 }
