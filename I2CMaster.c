@@ -62,7 +62,7 @@ void __send() {
         if (data > 0xff) {  // If it is a command
             switch (data) {
                 case I2C_START:
-                    I2C1CONSET = 1 << (txBufPointer > 0 ? 1 : 0);
+                    I2C1CONSET = (txBufPointer > 0 ? 2 : 1);
                     break;
                 case I2C_ACK:
                     I2C1CONbits.ACKDT = 0;  // Select ACK
@@ -92,6 +92,7 @@ void __send() {
  * The interrupt to receive data
  */
 void __ISR(_I2C_1_VECTOR, IPL5SOFT) I2CInt() {
+    _nop();
     if (I2C1STATbits.RBF) {
         txPause = 0;
         uint id = i2c_txBuf[txBufPointer] & 0xff;
@@ -206,7 +207,8 @@ void i2c_init() {
  * @return      The ID given to the interpreter
  */
 unchar i2c_onRecieve(void *func){
-    receiverLen++;
     receivers[receiverLen] = func;
-    return receiverLen;
+    uint r=receiverLen;
+    receiverLen++;
+    return r;
 }

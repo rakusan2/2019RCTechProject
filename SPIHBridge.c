@@ -93,7 +93,7 @@ void hb_init(){
     IEC1bits.SPI1RXIE = 1;  // Enable SPI Receive Interrupt
     
     T4CON = 0x0060;         // 1:64 Prescaler
-    PR3 = HB_MIN_TIME;
+    PR4 = HB_MIN_TIME;
     
     IPC4bits.T4IP = 6;
     IPC3bits.INT3IS = 1;
