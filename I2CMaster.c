@@ -22,6 +22,8 @@
 #define I2C_START   0x101
 #define I2C_ACK     0x102
 #define I2C_NACK    0x103
+#define I2C_RESTART 0x104
+#define I2C_END     0x105
 #define I2C_READ    0x200
 
 void (*receivers[10])();
@@ -30,7 +32,6 @@ uint receiverLen = 0;
 uint i2c_txBuf[200];
 uint txBufPointer = 0;
 uint txEndPointer = 0;
-uint txPause = 0;
 
 unchar i2c_rxBuf[256];
 uint _rxPointer=0;
@@ -47,22 +48,48 @@ void bufAddByte(uint byte) {
     }
 }
 
+void i2c_resend(){
+    int i;
+    for(i=txBufPointer-1;i>0;i--){
+        uint data = i2c_txBuf[i];
+        if(i2c_txBuf[i] == I2C_START){
+            if(i2c_txBuf[i+1] & 1){
+                data--;
+                continue;
+            }else{
+                break;
+            }
+        }
+    }
+    I2C1STATbits.BCL = 0;
+    __send();
+}
+
 /**
  * Send the send buffers contents
  */
 void __send() {
-    if (!txPause && !I2C1STATbits.TRSTAT && txBufPointer < txEndPointer) {
+    if(I2C1STATbits.BCL){
+        i2c_resend();
+    }
+    if (!I2C1STATbits.TRSTAT && (txBufPointer < txEndPointer) && !I2C1CONbits.RCEN && !I2C1STATbits.ACKSTAT) {
         uint data = i2c_txBuf[txBufPointer];
+        txBufPointer++;
         if (data >= I2C_READ) {
-            txPause = 1;
+            rxID = data & 0xff;
             I2C1CONbits.RCEN = 1;
             return;
         }
-        txBufPointer++;
         if (data > 0xff) {  // If it is a command
             switch (data) {
                 case I2C_START:
-                    I2C1CONSET = (txBufPointer > 0 ? 2 : 1);
+                    I2C1CONbits.SEN = 1;
+                    break;
+                case I2C_RESTART:
+                    I2C1CONbits.RSEN = 1;
+                    break;
+                case I2C_END:
+                    I2C1CONbits.PEN = 1;
                     break;
                 case I2C_ACK:
                     I2C1CONbits.ACKDT = 0;  // Select ACK
@@ -83,42 +110,36 @@ void __send() {
             I2C1TRN = data;
         }
     }else if(txBufPointer == txEndPointer && txBufPointer > 0 && !I2C1STATbits.TRSTAT){
-        I2C1CONbits.PEN = 1;
+        //I2C1CONbits.PEN = 1;
         txBufPointer = txEndPointer = 0;
     }
 }
+
 
 /**
  * The interrupt to receive data
  */
 void __ISR(_I2C_1_VECTOR, IPL5SOFT) I2CInt() {
     _nop();
-    if (I2C1STATbits.RBF) {
-        txPause = 0;
-        uint id = i2c_txBuf[txBufPointer] & 0xff;
-        if(id < receiverLen){
-            rxID=id;
+    if(I2C1STATbits.BCL){
+        i2c_resend();
+    }else if (I2C1STATbits.RBF) {
+        if(rxID < receiverLen){
             i2c_rxBuf[_rxPointer]=I2C1RCV;
             _rxPointer++;
         }else {
             I2C1RCV;    //Empty the receive buffer if there is nothing waiting for it
         }
-        txBufPointer++;
         __send();
     } else if (!I2C1STATbits.ACKSTAT) {
+        __send();
+    }else if(!I2C1STATbits.TRSTAT && !I2C1CONbits.RCEN){
         __send();
     }
     IFS1bits.I2C1MIF=0;
 }
 
-/**
- * Start Reading from the recipient
- * @param addr  the recipients address
- */
-inline void startRead(unchar addr) {
-    bufAddByte(I2C_START);
-    bufAddByte((addr << 1) | 0x1);
-}
+
 
 /**
  * Start Writing to the recipient
@@ -129,6 +150,12 @@ inline void startWrite(unchar addr, unchar reg) {
     bufAddByte(I2C_START);
     bufAddByte(addr<<1);
     bufAddByte(reg);
+}
+
+inline void _startReadReg(unchar addr, unchar reg){
+    startWrite(addr, reg);
+    bufAddByte(I2C_RESTART);
+    bufAddByte((addr << 1) | 0x01);
 }
 
 /**
@@ -144,6 +171,7 @@ void i2c_setMany(unchar addr ,unchar reg, unchar *data, uint count) {
     for (i = 0; i < count; i++) {
         bufAddByte(data[i]);
     }
+    bufAddByte(I2C_END);
     __send();
 }
 
@@ -156,6 +184,7 @@ void i2c_setMany(unchar addr ,unchar reg, unchar *data, uint count) {
 void i2c_setOne(unchar addr ,unchar reg, unchar data) {
     startWrite(addr, reg);
     bufAddByte(data);
+    bufAddByte(I2C_END);
     __send();
 }
 
@@ -167,8 +196,7 @@ void i2c_setOne(unchar addr ,unchar reg, unchar data) {
  * @param id    The ID of the interpreter function
  */
 void i2c_getMany(unchar addr ,unchar reg, uint count, unchar id) {
-    startWrite(addr, reg);
-    startRead(addr);
+    _startReadReg(addr, reg);
     uint i;
     bufAddByte(I2C_READ | id);
     for (i = 1; i < count; i++) {
@@ -176,6 +204,7 @@ void i2c_getMany(unchar addr ,unchar reg, uint count, unchar id) {
         bufAddByte(I2C_READ | id);
     }
     bufAddByte(I2C_NACK);
+    bufAddByte(I2C_END);
     __send();
 }
 

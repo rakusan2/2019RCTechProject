@@ -26,6 +26,8 @@
 int drive_curSpeed = 0;
 int drive_speed = 0;
 int drive_rate = 0x2;
+int drive_negLimit = -255;
+int drive_posLimit = 255;
 
 void drive_setCurSpeed(int speed){
     drive_curSpeed = speed;
@@ -40,8 +42,8 @@ void drive_setCurSpeed(int speed){
     OC5RS = speed * OC5R_PER_BIT;
 }
 
-void steer_set(int speed){
-    steer_speed = bind(-255, speed, 255);
+void drive_set(int speed){
+    drive_speed = bind(-255, speed, 255);
 }
 
 void drive_pwmRefresh(){
