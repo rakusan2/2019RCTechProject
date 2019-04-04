@@ -21,8 +21,43 @@
 #include "serializer.h"
 #include "SPIHBridge.h"
 
-#define OC3R_PER_BIT 2
+#define OC5R_PER_BIT 2
+
+int drive_curSpeed = 0;
+int drive_speed = 0;
+int drive_rate = 0x2;
+
+void drive_setCurSpeed(int speed){
+    drive_curSpeed = speed;
+    if(speed < 0){
+        PORTB = (PORTB & 0xf3ff) | 0x800;
+        speed = -speed;
+    }else if(speed == 0){
+        PORTACLR = 3;
+    }else{
+        PORTB = (PORTB & 0xf3ff) | 0x400;
+    }
+    OC5RS = speed * OC5R_PER_BIT;
+}
+
+void steer_set(int speed){
+    steer_speed = bind(-255, speed, 255);
+}
+
+void drive_pwmRefresh(){
+    if(drive_speed != drive_curSpeed && isBetween(drive_negLimit, drive_curSpeed, drive_posLimit)){
+        int speed = drive_curSpeed + (drive_curSpeed < drive_speed ? drive_rate : -drive_rate);
+        steer_setCurSpeed(bind(drive_negLimit, speed, drive_posLimit));
+    }
+}
 
 void drive_init(){
     
+    TRISACLR = 0x3;
+    
+    RPA4R = 0b0110;     // Set Port A4 to use OC5
+    OC5CON = 0x0006;    // Enable PWM from Timer 2
+    
+    OC5CONSET = 0x8000; 
+    drive_setCurSpeed(0);
 }

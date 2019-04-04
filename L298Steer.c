@@ -20,6 +20,7 @@
 #include "tools.h"
 #include "serializer.h"
 #include "SPIHBridge.h"
+#include "L298Drive.h"
 
 #define OC3R_PER_BIT 2
 
@@ -50,6 +51,7 @@ void steer_set(int speed){
 }
 
 void __ISR(_TIMER_2_VECTOR, IPL6SOFT) PWMInt(){
+    drive_pwmRefresh();
     if(steer_speed != steer_curSpeed && isBetween(steer_negLimit, steer_curSpeed, steer_posLimit)){
         int speed = steer_curSpeed + (steer_curSpeed < steer_speed ? steer_rate : -steer_rate);
         steer_setCurSpeed(bind(steer_negLimit, speed, steer_posLimit));
