@@ -29,6 +29,10 @@ int drive_rate = 0x2;
 int drive_negLimit = -255;
 int drive_posLimit = 255;
 
+/**
+ * Set Motor Speed
+ * @param speed The speed to Set
+ */
 void drive_setCurSpeed(int speed){
     drive_curSpeed = speed;
     if(speed < 0){
@@ -42,27 +46,43 @@ void drive_setCurSpeed(int speed){
     OC5RS = speed * OC5R_PER_BIT;
 }
 
+/**
+ * The Motor Speed to aim for
+ * @param speed
+ */
 void drive_set(int speed){
     drive_speed = bind(-255, speed, 255);
 }
 
+/**
+ * Moves the current speed towards the desired speed
+ */
 void drive_pwmRefresh(){
-    if(drive_speed != drive_curSpeed && isBetween(drive_negLimit, drive_curSpeed, drive_posLimit)){
+    if(drive_speed != drive_curSpeed || !isBetween(drive_negLimit, drive_curSpeed, drive_posLimit)){
         int speed = drive_curSpeed + (drive_curSpeed < drive_speed ? drive_rate : -drive_rate);
         steer_setCurSpeed(bind(drive_negLimit, speed, drive_posLimit));
     }
 }
 
+/**
+ * Set the Positive maximum speed of the motor
+ * @param max
+ */
 void drive_setMax(int max){
     drive_posLimit = bind(0, max, 255);
 }
 
+/**
+ * Decode speed from input
+ * @param data The input
+ * @return The Speed
+ */
 signed int getMotorSet(unchar *data){
     unchar ch = data[0];
     if(ch == 'p'){
-        return 0x3f;
+        return 0xff;
     }else if(ch == 'n'){
-        return -0x3f;
+        return -0xff;
     }else if(ch == '\\'){
         return data[1];
     }else if(ch == '-' || (ch >= '0' && ch <= '9')){
@@ -84,15 +104,31 @@ signed int getMotorSet(unchar *data){
         return 0;
     }
 }
+
+/**
+ * Decodes the Command given to the Drive System
+ * @param data The Command
+ * @param len The Length of the command
+ */
 void drive_deserializer(unchar *data, uint len){
-    if(len>0){                                                                                                                                                                                 
-        drive_set(getMotorSet(data));
+    if(len>0){
+        if(data[0] == 'b'){
+            drive_setCurSpeed(0)
+            drive_set(0);
+            PORTB = PORTB & 0xf3ff;
+        }else{
+            drive_set(getMotorSet(data));
+        }
     }
     se_addStr_("D_set=");
     se_addNum(drive_speed);
     se_addStr_(",D_cur=");
     se_addNum(drive_curSpeed);
 }
+
+/**
+ * Initialize the drive motor
+ */
 void drive_init(){
     
     TRISACLR = 0x3;

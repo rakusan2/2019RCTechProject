@@ -32,6 +32,10 @@ int steer_negLimit = -255;
 int steer_rate = 0x2;
 int steer_aim =0;
 
+/**
+ * Set Motor Speed
+ * @param speed The speed to Set
+ */
 void steer_setCurSpeed(int speed){
     steer_curSpeed = speed;
     if(speed < 0){
@@ -45,10 +49,17 @@ void steer_setCurSpeed(int speed){
     OC3RS = speed * OC3R_PER_BIT;
 }
 
+/**
+ * The Motor Speed to aim for
+ * @param speed
+ */
 void steer_set(int speed){
     steer_speed = bind(-255, speed, 255);
 }
 
+/**
+ * Moves the current speed towards the desired speed at a desired rate
+ */
 void __ISR(_TIMER_2_VECTOR, IPL6SOFT) PWMInt(){
     drive_pwmRefresh();
     if(steer_speed != steer_curSpeed && isBetween(steer_negLimit, steer_curSpeed, steer_posLimit)){
@@ -58,6 +69,10 @@ void __ISR(_TIMER_2_VECTOR, IPL6SOFT) PWMInt(){
     IFS0bits.T2IF = 0;
 }
 
+/**
+ * Set the Positive maximum speed of the motor
+ * @param max
+ */
 void steer_setPosLimit(int speed){
     steer_posLimit = bind(0, speed, 255);
     if(steer_curSpeed > steer_posLimit){
@@ -65,6 +80,10 @@ void steer_setPosLimit(int speed){
     }
 }
 
+/**
+ * Set the Negative maximum speed of the motor
+ * @param max
+ */
 void steer_setNegLimit(int speed){
     steer_negLimit = bind(-255, speed, 0);
     if(steer_curSpeed < steer_negLimit){
@@ -72,16 +91,28 @@ void steer_setNegLimit(int speed){
     }
 }
 
+/**
+ * Trigger the response to the end stop
+ */
 void steer_trigEnd(){
     steer_setCurSpeed(0);
     steer_speed = 0;
 }
+
+/**
+ * Trigger the response to the middle steer position
+ */
 void steer_trigCenter(){
     if(steer_aim != 0){
         steer_set(0);
     }
 }
 
+/**
+ * Decodes the Command given to the Steer System
+ * @param data The Command
+ * @param len The Length of the command
+ */
 void steer_deserializer(unchar *data, uint len){
     if(len>0){
         if(data[0] == 'l'){
@@ -118,6 +149,9 @@ void steer_deserializer(unchar *data, uint len){
     se_addNum(steer_curSpeed);
 }
 
+/**
+ * Initialize the drive motor
+ */
 void steer_init(){
     TRISACLR = 0x3;
     
