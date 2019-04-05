@@ -33,10 +33,19 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL4SOFT) PortChangeInt(){
     IFS1CLR=(7<<13);
 }
 
+/**
+ * Interpret the command sent to the limits
+ * @param data  The Command
+ * @param len   The Length of the command
+ */
 void ts_deserialize(unchar *data, uint len){
     se_addStr_("L=");
     se_addUNum(ts_lastState);
 }
+
+/**
+ * Initialize the Limits
+ */
 void ts_init(){
     
     TRISBSET = 0xA;

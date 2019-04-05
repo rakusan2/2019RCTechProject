@@ -113,7 +113,7 @@ signed int getMotorSet(unchar *data){
 void drive_deserializer(unchar *data, uint len){
     if(len>0){
         if(data[0] == 'b'){
-            drive_setCurSpeed(0)
+            drive_setCurSpeed(0);
             drive_set(0);
             PORTB = PORTB & 0xf3ff;
         }else{

@@ -24,6 +24,7 @@
 #include "L298Steer.h"
 #include "L298Drive.h"
 #include "User.h"
+#include "wifi.h"
 
 /**
  * Check whether a character is a capital
@@ -94,8 +95,11 @@ void dese_deserialize(unchar userID, unchar *data, uint len){
             case 'T':   // Temperature
                 mpu_tempDeserializer(data + index, commandDataLen);
                 break;
+            case 'W':
+                wifi_deserializer(data + index, commandDataLen);
+                break;
             case 'V':   // Version
-                se_addStr_("V=0.1");
+                se_addStr_("V=0.2");
                 break;
             case 'E':   // Echo
                 se_addStr_("E=\"");

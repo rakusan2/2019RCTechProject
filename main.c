@@ -12,7 +12,7 @@
 #include "wifi.h"
 #include "tools.h"
 #include "sonic.h"
-#include "turnSensor.h"
+#include "limits.h"
 #include "deserializer.h"
 #include "serializer.h"
 #include "I2CMaster.h"
@@ -103,7 +103,7 @@ void __ISR(_TIMER_1_VECTOR, IPL1SOFT) mainLoop(){
     bat_convert();  // Measure the battery voltage
     
     startCounter++;
-    if(startCounter == 50){
+    if(startCounter == 100){
         wifi_forceStart(); // After 2s try to force start the WiFi
     }
     

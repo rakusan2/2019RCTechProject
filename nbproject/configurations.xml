@@ -28,7 +28,6 @@
       <itemPath>main.c</itemPath>
       <itemPath>wifi.c</itemPath>
       <itemPath>tools.c</itemPath>
-      <itemPath>turnSensor.c</itemPath>
       <itemPath>I2CMaster.c</itemPath>
       <itemPath>MPU6050.c</itemPath>
       <itemPath>SPIHBridge.c</itemPath>
@@ -39,6 +38,7 @@
       <itemPath>L298Steer.c</itemPath>
       <itemPath>L298Drive.c</itemPath>
       <itemPath>User.c</itemPath>
+      <itemPath>limits.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

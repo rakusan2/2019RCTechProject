@@ -50,6 +50,9 @@ void bufAddByte(uint byte) {
     }
 }
 
+/**
+ * Try to resend the current current message
+ */
 void i2c_resend(){
     int i;
     for(i=txBufPointer-1;i>0;i--){
@@ -154,6 +157,11 @@ inline void startWrite(unchar addr, unchar reg) {
     bufAddByte(reg);
 }
 
+/**
+ * Start a read command
+ * @param addr  The Slave Address
+ * @param reg   The Register to be read from
+ */
 inline void _startReadReg(unchar addr, unchar reg){
     startWrite(addr, reg);
     bufAddByte(I2C_RESTART);

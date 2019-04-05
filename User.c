@@ -22,10 +22,18 @@
 #include "deserializer.h"
 #include "User.h"
 
+/**
+ * User has connected
+ * @param id The ID of the user
+ */
 void user_connect(unchar id){
     users[id].connected = 1;
 }
 
+/**
+ * User has Disconnected
+ * @param id The ID of the user
+ */
 void user_disconnect(unchar id){
         users[id].connected = 0;
         users[id].nl = 0;
@@ -33,6 +41,12 @@ void user_disconnect(unchar id){
         users[id].repeatCMDLen = 0;
 }
 
+/**
+ * Interpret and setup a repeated command
+ * @param userID The ID of the user
+ * @param data   The repeat command to be interpreted
+ * @param len    The Length of the data
+ */
 void user_deseRepeat(unchar userID, unchar *data, uint len){
     unchar quote = 0;
     uint i;
@@ -51,6 +65,10 @@ void user_deseRepeat(unchar userID, unchar *data, uint len){
     }
 }
 
+/**
+ * Run the repeated commands
+ * @param time  The current run count
+ */
 void user_doRepeat(uint time){
     uint i;
     for(i = 0; i < 5; i++){

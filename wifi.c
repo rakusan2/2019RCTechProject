@@ -18,6 +18,7 @@
 #include <sys/attribs.h>
 #include <stdlib.h>
 #include "tools.h"
+#include "serializer.h"
 
 #define UART1_PRIORITY 7
 #define TXBufSize 512
@@ -31,7 +32,6 @@ uint txPointer = 0;
 uint rxPointer = 0;
 uint boot =0;
 
-int wifi_started = 0;
 
 int pauseTX = 1;
 // Located In Main
@@ -71,7 +71,6 @@ void __sendNext() {
 void resumeTX(unchar *data, uint len) {
     if (startsWith(data, len, "FAIL", 4)) {
         txBufLen = txPointer = 0;
-        wifi_started = 1;
         wifi_receive(data, len);
     } else if(len>0 && !startsWith(data,len,"AT",2) && !startsWith(data,len,"busy",4) && boot) {
         pauseTX = 0;
@@ -341,10 +340,25 @@ void wifi_setSoftAP(unchar *ssid, unchar *pwd) {
  * Force start transmission to the WiFi module
  */
 void wifi_forceStart(){
-    if(!wifi_started){
-        wifi_started = 1;
-        boot = 1;
-        pauseTX = 0;
-        __sendNext();
-    }
+    boot = 1;
+    pauseTX = 0;
+    __sendNext();
+}
+
+/**
+ * Interpret Command to the WiFi module
+ * @param data
+ * @param len
+ */
+void wifi_deserializer(unchar *data, uint len){
+    se_addStr_("W_boot=");
+    se_addUNum(boot);
+    se_addStr_(",W_pause=");
+    se_addUNum(pauseTX);
+    se_addStr_(",W_pauseTX=");
+    se_addUNum(boot);
+    se_addStr_(",W_TXbuf=");
+    se_addUNum(txPointer);
+    se_addChar('/');
+    se_addUNum(txBufLen);
 }
