@@ -19,7 +19,6 @@
 #include <sys/attribs.h>
 #include "tools.h"
 #include "serializer.h"
-#include "SPIHBridge.h"
 #include "L298Drive.h"
 
 #define OC3R_PER_BIT 2

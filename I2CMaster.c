@@ -37,6 +37,8 @@ unchar i2c_rxBuf[256];
 uint _rxPointer=0;
 uint rxID=0;
 
+void __send();
+
 /**
  * Add a byte the the send buffer
  * @param byte The byte being added

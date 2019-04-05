@@ -18,4 +18,6 @@
 void drive_setCurSpeed(int speed);
 void steer_set(int speed);
 void drive_pwmRefresh();
+signed int getMotorSet(unchar *data);
+void drive_deserializer(unchar *data, uint len);
 void drive_init();

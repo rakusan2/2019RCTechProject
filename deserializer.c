@@ -22,6 +22,7 @@
 #include "tools.h"
 #include "battery.h"
 #include "L298Steer.h"
+#include "L298Drive.h"
 #include "User.h"
 
 /**
@@ -76,8 +77,7 @@ void dese_deserialize(unchar userID, unchar *data, uint len){
                 sonic_serializeData(data + index, commandDataLen);
                 break;
             case 'D':   //Drive
-                //hb_driveDeserializer(data + index, commandDataLen);
-                se_addStr_("D=NotImplemented");
+                drive_deserializer(data + index, commandDataLen);
                 break;
             case 'S':   //Steer
                 steer_deserializer(data + index, commandDataLen);

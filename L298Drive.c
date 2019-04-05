@@ -53,6 +53,46 @@ void drive_pwmRefresh(){
     }
 }
 
+void drive_setMax(int max){
+    drive_posLimit = bind(0, max, 255);
+}
+
+signed int getMotorSet(unchar *data){
+    unchar ch = data[0];
+    if(ch == 'p'){
+        return 0x3f;
+    }else if(ch == 'n'){
+        return -0x3f;
+    }else if(ch == '\\'){
+        return data[1];
+    }else if(ch == '-' || (ch >= '0' && ch <= '9')){
+        signed int num = 0;
+        uint index = 0;
+        signed int sign = 1;
+        if(ch == '-'){
+            index = 1;
+            sign = -1;
+        }
+        ch = data[index];
+        while((ch >= '0' && ch <= '9')){
+            num = (num * 10) + ch - '0';
+            index++;
+            ch = data[index];
+        }
+        return num * sign;
+    }else{
+        return 0;
+    }
+}
+void drive_deserializer(unchar *data, uint len){
+    if(len>0){                                                                                                                                                                                 
+        drive_set(getMotorSet(data));
+    }
+    se_addStr_("D_set=");
+    se_addNum(drive_speed);
+    se_addStr_(",D_cur=");
+    se_addNum(drive_curSpeed);
+}
 void drive_init(){
     
     TRISACLR = 0x3;
