@@ -6,7 +6,6 @@
                    projectFiles="true">
       <itemPath>wifi.h</itemPath>
       <itemPath>tools.h</itemPath>
-      <itemPath>turnSensor.h</itemPath>
       <itemPath>I2CMaster.h</itemPath>
       <itemPath>MPU6050.h</itemPath>
       <itemPath>SPIHBridge.h</itemPath>
@@ -17,6 +16,7 @@
       <itemPath>L298Steer.h</itemPath>
       <itemPath>L298Drive.h</itemPath>
       <itemPath>User.h</itemPath>
+      <itemPath>limits.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"

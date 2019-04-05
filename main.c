@@ -103,7 +103,7 @@ void __ISR(_TIMER_1_VECTOR, IPL1SOFT) mainLoop(){
     bat_convert();  // Measure the battery voltage
     
     startCounter++;
-    if(startCounter == 100){
+    if(startCounter == 50){
         wifi_forceStart(); // After 2s try to force start the WiFi
     }
     
