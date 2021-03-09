@@ -194,6 +194,7 @@ int getIPDLen(unchar *data, int collonLocation){
 }
 
 signed int toRead = -1;
+unchar uartAct = 0;
 
 /**
  * UART Interrupt handler
@@ -285,6 +286,12 @@ void wifi_init() {
     //PORTBbits.RB5 = 0;
     txBufAddLn_("ATE0");
     //txBufAddLn_("AT+RESTORE");
+}
+
+void wifi_main(){
+    if(uartAct){
+        
+    }
 }
 
 /**

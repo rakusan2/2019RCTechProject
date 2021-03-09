@@ -56,7 +56,7 @@ void user_deseRepeat(unchar userID, unchar *data, uint len){
         unchar ch = data[i];
         if(ch == '"'){
             quote = !quote;
-        }else if(!quote && isBetween('0', ch, '9')){
+        }else if(!quote && isLowToHigh('0', ch, '9')){
             users[userID].repeatTime = (users[userID].repeatTime * 10) + (ch - '0');
         }else if(quote){
             users[userID].repeatCMD[users[userID].repeatCMDLen] = ch;

@@ -58,7 +58,7 @@ void drive_set(int speed){
  * Moves the current speed towards the desired speed
  */
 void drive_pwmRefresh(){
-    if(drive_speed != drive_curSpeed || !isBetween(drive_negLimit, drive_curSpeed, drive_posLimit)){
+    if(drive_speed != drive_curSpeed || !isLowToHigh(drive_negLimit, drive_curSpeed, drive_posLimit)){
         int speed = drive_curSpeed + (drive_curSpeed < drive_speed ? drive_rate : -drive_rate);
         steer_setCurSpeed(bind(drive_negLimit, speed, drive_posLimit));
     }

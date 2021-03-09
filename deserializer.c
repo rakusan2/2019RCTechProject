@@ -30,7 +30,7 @@
  * Check whether a character is a capital
  */
 inline uint isCapital(unchar ch){
-    return ch >= 'A' && ch <= 'Z';
+    return isLowToHigh('A', ch, 'Z');
 }
 
 /**

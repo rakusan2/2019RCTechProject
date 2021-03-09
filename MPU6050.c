@@ -34,6 +34,7 @@
 #define MPU_FIFO_R_W        0x74
 
 #define rotate(a,b,c) a[b]=c;b=(b+1)&8  // Rotate an 8 value array
+#define mpu_setReg(a,b) i2c_setOne(MPU_ADDRESS,a,b)
 
 unchar interpretFIFO_ID;
 unchar getFIFOLen_ID;
@@ -63,6 +64,7 @@ void interpretFIFO(unchar *data, uint len){
         gyro.Y += ((int32_t)joinHL(data, i + 10))*5;
         gyro.Z += ((int32_t)joinHL(data, i + 12))*5;
     }
+    mpu_data.temp = average8(temp);
     mpu_data.accelX = average8(accel.X);
     mpu_data.accelY = average8(accel.Y);
     mpu_data.accelZ = average8(accel.Z);
@@ -169,13 +171,13 @@ void mpu_tempDeserializer(unchar *data, uint len){
  */
 void mpu_init(){
     
-    i2c_setOne(MPU_ADDRESS, MPU_SMPLRT_DIV, 0x4);    // Set sampling Rate to 200Hz
-    i2c_setOne(MPU_ADDRESS, MPU_CONFIG, 0x1);        // Set Low Pas Filter to about 200Hz
-    i2c_setOne(MPU_ADDRESS, MPU_GYRO_CONFIG, 2<<3);  // Set Full scale Gyro Range to 1000deg/s
-    i2c_setOne(MPU_ADDRESS, MPU_ACCEL_CONFIG, 2<<3); // Set Full scale Accel Range to 8g
-    i2c_setOne(MPU_ADDRESS, MPU_FIFO_EN, 0xf8);      // Send Temp, Gyro XYZ, and Accel XYZ to FIFO
-    i2c_setOne(MPU_ADDRESS, MPU_USER_CTRL, 0x40);    // Enable FIFO Register
-    i2c_setOne(MPU_ADDRESS, MPU_PWR_MGMT_1, 1);      // Set clock source to Gyroscope X refference
+    mpu_setReg(MPU_SMPLRT_DIV, 0x4);    // Set sampling Rate to 200Hz
+    mpu_setReg(MPU_CONFIG, 0x1);        // Set Low Pas Filter to about 200Hz
+    mpu_setReg(MPU_GYRO_CONFIG, 2<<3);  // Set Full scale Gyro Range to 1000deg/s
+    mpu_setReg(MPU_ACCEL_CONFIG, 2<<3); // Set Full scale Accel Range to 8g
+    mpu_setReg(MPU_FIFO_EN, 0xf8);      // Send Temp, Gyro XYZ, and Accel XYZ to FIFO
+    mpu_setReg(MPU_USER_CTRL, 0x40);    // Enable FIFO Register
+    mpu_setReg(MPU_PWR_MGMT_1, 1);      // Set clock source to Gyroscope X refference
     
     interpretFIFO_ID = i2c_onRecieve(interpretFIFO);
     getFIFOLen_ID = i2c_onRecieve(getFIFOLen);

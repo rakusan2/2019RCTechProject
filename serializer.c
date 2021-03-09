@@ -77,7 +77,7 @@ void se_addUNum(uint num){
  * @param num The Intiger
  */
 void se_addNum(int num){
-    if(num < 10 && num > -10){
+    if(isLowToHigh(-9, num, 9)){
         if(num < 0){
             se_addChar('-');
             num = -num;

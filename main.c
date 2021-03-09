@@ -74,7 +74,7 @@ void wifi_receive(unchar *data, uint len) {
     }
     
     unchar firstCh = data[0];
-    unchar isID = isBetween('0',firstCh, '4');
+    unchar isID = isLowToHigh('0',firstCh, '4');
     
     if(isID && startsWith(data + 1,len, ",CON",4)){
         user_connect(firstCh - '0');
@@ -94,20 +94,13 @@ void _general_exception_handler (unsigned cause, unsigned status){
 }
 
 int startCounter = 0;   // Main Loop run count
+unchar runMain = 0;
 
 /**
  * The Main Loop
  */
 void __ISR(_TIMER_1_VECTOR, IPL1SOFT) mainLoop(){
-    mpu_refresh();  // Refresh the MPU
-    bat_convert();  // Measure the battery voltage
-    
-    startCounter++;
-    if(startCounter == 50){
-        wifi_forceStart(); // After 2s try to force start the WiFi
-    }
-    
-    user_doRepeat(startCounter);
+    runMain = 1;
     
     IFS0bits.T1IF = 0;
 }
@@ -144,6 +137,20 @@ int main(int argc, char** argv) {
     
     while (1) {
         _wait();
+        
+        if(runMain){
+            runMain = 0;
+            
+            mpu_refresh();  // Refresh the MPU
+            bat_convert();  // Measure the battery voltage
+
+            startCounter++;
+            if(startCounter == 50){
+                wifi_forceStart(); // After 2s try to force start the WiFi
+            }
+
+            user_doRepeat(startCounter);
+        }
     }
     return (EXIT_SUCCESS);
 }

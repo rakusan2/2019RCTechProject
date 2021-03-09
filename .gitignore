@@ -21,3 +21,4 @@ nbproject/Makefile-*
 disassembly/
 *.map
 .vscode/
+.generated_files/
